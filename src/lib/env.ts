@@ -104,11 +104,27 @@ function isValidPostgresUrl(value: string | undefined): boolean {
   return v.startsWith("postgresql://") || v.startsWith("postgres://");
 }
 
+function hasProductionAuthSecret(): boolean {
+  const s = process.env.AUTH_SECRET;
+  return typeof s === "string" && s.length >= 16;
+}
+
 /**
  * During `npm run build` / Docker build, Next loads server modules that import `env` before
  * runtime env (e.g. Railway `DATABASE_URL`) exists. Use placeholders only in that compile phase.
+ *
+ * When both a valid Postgres URL and a real `AUTH_SECRET` are set, always use them — never apply
+ * compile-only heuristics (`NEXT_PHASE`, `RESIN_OS_COMPILE_STAGE`, etc.) so a mis-set platform
+ * env cannot affect a running deployment.
  */
 function rawProcessEnv(): NodeJS.ProcessEnv {
+  if (isValidPostgresUrl(process.env.DATABASE_URL) && hasProductionAuthSecret()) {
+    return {
+      ...process.env,
+      DATABASE_URL: process.env.DATABASE_URL!.trim(),
+    };
+  }
+
   if (!isCompilerBuildPhase()) {
     return process.env;
   }
