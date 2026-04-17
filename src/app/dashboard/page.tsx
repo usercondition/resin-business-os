@@ -67,9 +67,13 @@ export default function DashboardPage() {
       <p className="minimal-muted mt-1 text-sm">
         At-a-glance hub for sales pipeline, reply queue, import review, and production priorities.
       </p>
-      <p className="minimal-panel mt-3 text-sm">{message}</p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="status-pill">Live Operations View</p>
+        <p className="minimal-muted text-xs">Auto-refresh available with manual controls.</p>
+      </div>
+      <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="minimal-grid-dynamic mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Open Leads" value={metrics?.leadOpen ?? 0} />
         <StatCard label="Active Quotes" value={metrics?.quoteDraftOrSent ?? 0} />
         <StatCard label="Active Orders" value={metrics?.ordersActive ?? 0} />
@@ -80,8 +84,8 @@ export default function DashboardPage() {
         <StatCard label="Reply / Follow-up" value={metrics?.dueFollowUps ?? 0} />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <section className="minimal-panel lg:col-span-1">
+      <div className="minimal-grid-dynamic mt-4 grid gap-4 lg:grid-cols-3">
+        <section className="minimal-panel minimal-panel-elevated lg:col-span-1">
           <h2 className="text-base font-semibold">Production Queue</h2>
           <ul className="minimal-muted mt-2 list-disc pl-5 text-sm">
             {(metrics?.productionByStatus ?? []).map((entry) => (
@@ -92,14 +96,14 @@ export default function DashboardPage() {
           </ul>
         </section>
 
-        <section className="minimal-panel lg:col-span-1">
+        <section className="minimal-panel minimal-panel-elevated lg:col-span-1">
           <h2 className="text-base font-semibold">Reply Queue</h2>
           <p className="minimal-muted mt-1 text-xs">
             Recent inbound messages that may need responses.
           </p>
           <div className="mt-2 grid gap-2">
             {(metrics?.recentInboundMessages ?? []).map((message) => (
-              <article className="rounded-md border border-[var(--border)] p-2" key={message.id}>
+              <article className="rounded-md border border-[var(--border)] p-2 transition-colors hover:border-[var(--primary)]" key={message.id}>
                 <p className="text-sm font-medium">{message.customerName}</p>
                 <p className="minimal-muted text-xs">
                   {message.channel} - {new Date(message.receivedAt).toLocaleString()}
@@ -113,7 +117,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="minimal-panel lg:col-span-1">
+        <section className="minimal-panel minimal-panel-elevated lg:col-span-1">
           <h2 className="text-base font-semibold">System Watch</h2>
           <ul className="minimal-muted mt-2 grid gap-2 text-sm">
             <li className="rounded-md border border-[var(--border)] px-2 py-1">
@@ -129,11 +133,11 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <section className="minimal-panel mt-4">
+      <section className="minimal-panel minimal-panel-elevated mt-4">
         <h2 className="text-base font-semibold">Recent Activity</h2>
         <div className="mt-2 grid gap-2">
           {(metrics?.recentActivity ?? []).map((activity) => (
-            <article className="rounded-md border border-[var(--border)] px-2 py-2" key={activity.id}>
+            <article className="rounded-md border border-[var(--border)] px-2 py-2 transition-colors hover:border-[var(--accent)]" key={activity.id}>
               <p className="text-sm font-medium">{activity.action}</p>
               <p className="minimal-muted text-xs">
                 {activity.entityType} - {new Date(activity.createdAt).toLocaleString()}
@@ -153,9 +157,6 @@ export default function DashboardPage() {
         <button className="app-button" onClick={runReminders}>
           Run Reminder Engine
         </button>
-        <a className="app-button" href="/ops">
-          Go to Quick Ops
-        </a>
         <a className="app-button" href="/ops/imports">
           Open Import Review
         </a>
@@ -166,9 +167,9 @@ export default function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <article className="minimal-panel p-3">
+    <article className="minimal-panel minimal-panel-elevated p-3">
       <p className="minimal-muted text-xs uppercase tracking-wide">{label}</p>
-      <p className="mt-1 text-xl font-semibold">{value}</p>
+      <p className="minimal-kpi-value mt-1 text-xl font-semibold">{value}</p>
     </article>
   );
 }

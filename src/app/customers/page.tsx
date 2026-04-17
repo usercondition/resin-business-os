@@ -60,7 +60,7 @@ export default function CustomerLookupPage() {
     <main className="mx-auto max-w-6xl px-4 py-4">
       <h1 className="text-xl font-semibold">Customers</h1>
       <p className="minimal-muted mt-1 text-sm">Alphabetical customer list with personal and contact details.</p>
-      <p className="minimal-panel mt-3 text-sm">{message}</p>
+      <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
 
       <div className="mt-4">
         <input
@@ -71,9 +71,9 @@ export default function CustomerLookupPage() {
         />
       </div>
 
-      <section className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <section className="minimal-grid-dynamic mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((customer) => (
-          <article className="minimal-panel" key={customer.id}>
+          <article className="minimal-panel minimal-panel-elevated" key={customer.id}>
             <div className="flex items-start justify-between gap-2">
               <h2 className="text-base font-semibold">{customer.fullName}</h2>
               <a className="app-button text-xs" href={`/customers/${customer.id}`}>
