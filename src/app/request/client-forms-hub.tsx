@@ -16,8 +16,8 @@ export function ClientFormsHub() {
     <main className="mx-auto max-w-3xl py-4">
       <h1 className="text-xl font-semibold tracking-tight">Client forms</h1>
       <p className="minimal-muted mt-2 text-sm">
-        Share the <strong>inquiry</strong> link for first contact. When they are ready to commit, send the{" "}
-        <strong>full order</strong> link so they can enter line items, pricing, materials, and shipping details.
+        Canonical flow: <strong>Inquiry</strong> {"->"} draft order created automatically {"->"} send tokenized{" "}
+        <strong>full order form</strong> from that order container.
       </p>
       {note ? <p className="minimal-panel mt-3 text-sm">{note}</p> : null}
 
@@ -49,10 +49,15 @@ export function ClientFormsHub() {
         </section>
       </div>
 
-      <p className="minimal-muted mt-6 text-xs">
-        Legacy URL <code className="rounded bg-[var(--border)] px-1">/public/request</code> redirects to the inquiry
-        form.
-      </p>
+      <section className="minimal-panel mt-6">
+        <h3 className="text-sm font-semibold">How staff should use this</h3>
+        <ol className="minimal-muted mt-2 list-decimal space-y-1 pl-5 text-sm">
+          <li>Send inquiry link first.</li>
+          <li>After inquiry arrives, open the draft order in Orders.</li>
+          <li>Use "Copy client edit link" on that order to send the prefilled full-order form.</li>
+          <li>Client edits quantities/items and submits; the same order updates.</li>
+        </ol>
+      </section>
     </main>
   );
 }

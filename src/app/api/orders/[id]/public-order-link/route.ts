@@ -2,9 +2,8 @@ import { NextRequest } from "next/server";
 import { UserRole } from "@prisma/client";
 
 import { handleRouteError, ok } from "@/lib/api";
-import { env } from "@/lib/env";
 import { guardRoute } from "@/lib/security/guard";
-import { createPublicOrderEditToken } from "@/server/public-order-edit-token";
+import { createPublicOrderEditUrl } from "@/server/domain/orders/public-order-workflow-service";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -16,9 +15,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return guarded;
     }
 
-    const token = createPublicOrderEditToken(params.id);
-    const origin = env.APP_URL || request.nextUrl.origin;
-    const url = `${origin.replace(/\/$/, "")}/public/order-form?token=${encodeURIComponent(token)}`;
+    const { token, url } = createPublicOrderEditUrl(params.id, request.nextUrl.origin);
     return ok({ url, token });
   } catch (error) {
     return handleRouteError(error);

@@ -1,15 +1,14 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { db } from "@/lib/db";
 import { fail, handleRouteError, ok } from "@/lib/api";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { getRequestContext } from "@/lib/security/request-context";
 import { createOrder } from "@/server/domain/orders/order-service";
-import { createAuditLog } from "@/server/audit/audit-service";
-import { verifyPublicOrderEditToken } from "@/server/public-order-edit-token";
-import { appendTimelineEvent } from "@/server/timeline/timeline-service";
-import { toPrismaJsonOptional } from "@/lib/prisma-json";
+import {
+  applyPublicOrderUpdate,
+  getPublicOrderPrefill,
+} from "@/server/domain/orders/public-order-workflow-service";
 
 const publicCustomerSchema = z
   .object({
@@ -49,57 +48,6 @@ function hasNonBlankContact(customer: { email?: string; phone?: string }) {
   return Boolean(String(customer.email ?? "").trim()) || Boolean(String(customer.phone ?? "").trim());
 }
 
-function clientPayloadFromOrder(order: {
-  customer: {
-    fullName: string;
-    phone: string | null;
-    email: string | null;
-    preferredContactChannel: string | null;
-    defaultAddress: string | null;
-    notes: string | null;
-  };
-  dueDate: Date | null;
-  notes: string | null;
-  tax: { toString(): string };
-  discount: { toString(): string };
-  items: Array<{
-    itemName: string;
-    quantity: number;
-    unitPrice: { toString(): string };
-    materialType: string | null;
-    color: string | null;
-    printSpecJson: unknown;
-  }>;
-}) {
-  return {
-    customer: {
-      fullName: order.customer.fullName,
-      phone: order.customer.phone ?? "",
-      email: order.customer.email ?? "",
-      preferredContactChannel: order.customer.preferredContactChannel ?? "",
-      defaultAddress: order.customer.defaultAddress ?? "",
-      notes: order.customer.notes ?? "",
-    },
-    order: {
-      dueDate: order.dueDate ? order.dueDate.toISOString().slice(0, 10) : "",
-      notes: order.notes ?? "",
-      tax: Number(order.tax.toString()),
-      discount: Number(order.discount.toString()),
-      items: order.items.map((i) => ({
-        itemName: i.itemName,
-        quantity: i.quantity,
-        unitPrice: Number(i.unitPrice.toString()),
-        materialType: i.materialType ?? "",
-        color: i.color ?? "",
-        printNotes:
-          i.printSpecJson && typeof i.printSpecJson === "object" && "notes" in (i.printSpecJson as object)
-            ? String((i.printSpecJson as { notes?: unknown }).notes ?? "")
-            : "",
-      })),
-    },
-  };
-}
-
 export async function GET(request: NextRequest) {
   try {
     const limited = await enforceRateLimit(request, "public:order-submit:get", 50, 60_000);
@@ -110,22 +58,11 @@ export async function GET(request: NextRequest) {
     if (!token) {
       return fail("Missing token", 400);
     }
-    const session = verifyPublicOrderEditToken(token);
-    if (!session) {
+    const prefill = await getPublicOrderPrefill(token);
+    if (!prefill) {
       return fail("Invalid or expired token", 401);
     }
-    const order = await db.order.findUnique({
-      where: { id: session.orderId },
-      include: { customer: true, items: { orderBy: { sortOrder: "asc" } } },
-    });
-    if (!order) {
-      return fail("Order not found", 404);
-    }
-    return ok({
-      ...clientPayloadFromOrder(order),
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-    });
+    return ok(prefill);
   } catch (error) {
     return handleRouteError(error);
   }
@@ -171,90 +108,33 @@ export async function PATCH(request: NextRequest) {
     if (!body.token) {
       return fail("Missing token", 400);
     }
-    const session = verifyPublicOrderEditToken(body.token);
-    if (!session) {
-      return fail("Invalid or expired token", 401);
-    }
     if (!hasNonBlankContact(body.newCustomer)) {
       return fail("Provide an email or phone number on the customer section.", 422);
     }
 
     const context = getRequestContext(request);
-    const existing = await db.order.findUnique({
-      where: { id: session.orderId },
-      include: { customer: true, items: true },
+    const updated = await applyPublicOrderUpdate({
+      token: body.token,
+      submit: {
+        customer: body.newCustomer,
+        dueDate: body.dueDate,
+        notes: body.notes,
+        tax: body.tax,
+        discount: body.discount,
+        items: body.items,
+      },
+      requestMeta: context,
     });
-    if (!existing) {
+    if (updated.kind === "invalid_token") {
+      return fail("Invalid or expired token", 401);
+    }
+    if (updated.kind === "not_found") {
       return fail("Order not found", 404);
     }
 
-    const subtotal = body.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-    const total = subtotal + body.tax - body.discount;
-    const paid = await db.payment.aggregate({
-      _sum: { amount: true },
-      where: { orderId: existing.id },
-    });
-    const balanceDue = total - Number(paid._sum.amount ?? 0);
-
-    await db.$transaction(async (tx) => {
-      await tx.customer.update({
-        where: { id: existing.customerId },
-        data: {
-          fullName: body.newCustomer.fullName.trim(),
-          phone: body.newCustomer.phone?.trim() || null,
-          email: body.newCustomer.email?.trim() || null,
-          preferredContactChannel: body.newCustomer.preferredContactChannel?.trim() || null,
-          defaultAddress: body.newCustomer.defaultAddress?.trim() || null,
-          notes: body.newCustomer.notes?.trim() || null,
-        },
-      });
-
-      await tx.orderItem.deleteMany({ where: { orderId: existing.id } });
-      await tx.order.update({
-        where: { id: existing.id },
-        data: {
-          dueDate: body.dueDate,
-          notes: body.notes?.trim() || null,
-          tax: body.tax,
-          discount: body.discount,
-          subtotal,
-          total,
-          balanceDue,
-          items: {
-            create: body.items.map((item, index) => ({
-              itemName: item.itemName,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              materialType: item.materialType,
-              color: item.color,
-              printSpecJson: toPrismaJsonOptional(item.printSpec),
-              lineTotal: item.quantity * item.unitPrice,
-              sortOrder: index,
-            })),
-          },
-        },
-      });
-    });
-
-    await createAuditLog({
-      entityType: "order",
-      entityId: existing.id,
-      action: "public_order_form.updated",
-      after: { customerId: existing.customerId },
-      requestId: context.requestId,
-      ipAddress: context.ipAddress,
-    });
-    await appendTimelineEvent({
-      entityType: "order",
-      entityId: existing.id,
-      action: "public_order_form_updated",
-      payload: { orderNumber: existing.orderNumber },
-      requestId: context.requestId,
-    });
-
     return ok({
-      orderId: existing.id,
-      orderNumber: existing.orderNumber,
+      orderId: updated.orderId,
+      orderNumber: updated.orderNumber,
       updated: true,
     });
   } catch (error) {

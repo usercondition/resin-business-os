@@ -112,12 +112,20 @@ export default function OrdersPage() {
   const [newCustomer, setNewCustomer] = useState<NewCustomerFields>(emptyNewCustomer());
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showInquiryDraftsOnly, setShowInquiryDraftsOnly] = useState(false);
   const [message, setMessage] = useState("Ready");
   const [loading, setLoading] = useState(false);
 
   const selectedOrder = useMemo(
     () => orders.find((order) => order.id === editingOrderId) ?? null,
     [orders, editingOrderId],
+  );
+  const visibleOrders = useMemo(
+    () =>
+      showInquiryDraftsOnly
+        ? orders.filter((order) => order.orderNumber.startsWith("INQ-"))
+        : orders,
+    [orders, showInquiryDraftsOnly],
   );
 
   const subtotal = useMemo(
@@ -798,13 +806,30 @@ export default function OrdersPage() {
       </section>
 
       <section className="minimal-panel mt-4">
-        <h2 className="text-base font-semibold">Existing orders</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-semibold">Existing orders</h2>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              checked={showInquiryDraftsOnly}
+              onChange={(e) => setShowInquiryDraftsOnly(e.target.checked)}
+              type="checkbox"
+            />
+            Show inquiry drafts only
+          </label>
+        </div>
         <div className="mt-2 grid gap-2">
-          {orders.map((order) => (
+          {visibleOrders.map((order) => (
             <article className="rounded-md border border-[var(--border)] p-3" key={order.id}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold">{order.orderNumber}</p>
+                  <p className="text-sm font-semibold">
+                    {order.orderNumber}
+                    {order.orderNumber.startsWith("INQ-") ? (
+                      <span className="ml-2 rounded bg-[var(--border)] px-1.5 py-0.5 text-[10px] font-normal">
+                        Draft from inquiry
+                      </span>
+                    ) : null}
+                  </p>
                   <p className="minimal-muted text-xs">
                     {order.status} · production {order.productionStatus} · payment {order.paymentStatus}
                     {order.deliveryStatus ? ` · delivery ${order.deliveryStatus}` : ""}
@@ -830,6 +855,11 @@ export default function OrdersPage() {
               </div>
             </article>
           ))}
+          {visibleOrders.length === 0 ? (
+            <p className="minimal-muted text-sm">
+              {showInquiryDraftsOnly ? "No inquiry drafts found." : "No orders yet."}
+            </p>
+          ) : null}
         </div>
       </section>
       {selectedOrder ? (

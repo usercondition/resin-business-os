@@ -6,9 +6,12 @@ import { db } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { getRequestContext } from "@/lib/security/request-context";
 import { createAuditLog } from "@/server/audit/audit-service";
+import {
+  createInquiryDraftOrder,
+  createPublicOrderEditUrl,
+} from "@/server/domain/orders/public-order-workflow-service";
 import { createLead } from "@/server/domain/leads/lead-service";
 import { notifyNewPrintRequest } from "@/server/notifications/request-notifier";
-import { createPublicOrderEditToken } from "@/server/public-order-edit-token";
 import { appendTimelineEvent } from "@/server/timeline/timeline-service";
 
 const inquirySchema = z
@@ -103,39 +106,14 @@ export async function POST(request: NextRequest) {
       context,
     );
 
-    const draftSubtotal = Number(parsed.budget ?? 0);
-    const draftOrder = await db.order.create({
-      data: {
-        customerId: customer.id,
-        leadId: lead.id,
-        orderNumber: `INQ-${new Date().getFullYear()}-${lead.id.slice(-8).toUpperCase()}`,
-        notes: [
-          `Draft from inquiry: ${parsed.subject}`,
-          parsed.message,
-          `Budget: ${parsed.budget ?? "N/A"}`,
-          `Due: ${parsed.dueDate ? parsed.dueDate.toISOString() : "N/A"}`,
-        ].join("\n\n"),
-        dueDate: parsed.dueDate,
-        subtotal: draftSubtotal,
-        tax: 0,
-        discount: 0,
-        total: draftSubtotal,
-        balanceDue: draftSubtotal,
-        items: {
-          create: [
-            {
-              itemName: parsed.subject,
-              quantity: 1,
-              unitPrice: draftSubtotal,
-              lineTotal: draftSubtotal,
-              sortOrder: 0,
-              printSpecJson: {
-                inquiryMessage: parsed.message,
-              },
-            },
-          ],
-        },
-      },
+    const draftOrder = await createInquiryDraftOrder({
+      customerId: customer.id,
+      leadId: lead.id,
+      subject: parsed.subject,
+      message: parsed.message,
+      budget: parsed.budget,
+      dueDate: parsed.dueDate,
+      requestMeta: context,
     });
 
     await appendTimelineEvent({
@@ -143,13 +121,6 @@ export async function POST(request: NextRequest) {
       entityId: customer.id,
       action: "inquiry_submitted",
       payload: { leadId: lead.id, subject: parsed.subject, orderId: draftOrder.id },
-      requestId: context.requestId,
-    });
-    await appendTimelineEvent({
-      entityType: "order",
-      entityId: draftOrder.id,
-      action: "inquiry_order_draft_created",
-      payload: { leadId: lead.id, subject: parsed.subject },
       requestId: context.requestId,
     });
 
@@ -171,8 +142,7 @@ export async function POST(request: NextRequest) {
       summary: `Inquiry: ${parsed.subject} (draft order ${draftOrder.orderNumber})`,
     });
 
-    const editToken = createPublicOrderEditToken(draftOrder.id);
-    const editOrderLink = `${request.nextUrl.origin}/public/order-form?token=${encodeURIComponent(editToken)}`;
+    const { url: editOrderLink } = createPublicOrderEditUrl(draftOrder.id, request.nextUrl.origin);
 
     return ok({
       submitted: true,
