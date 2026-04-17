@@ -2,9 +2,10 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
-const ACTOR_HEADERS = {
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
+const shopFetch: RequestInit = { credentials: "include" };
+const shopJsonFetch: RequestInit = {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
 };
 
 type Feed = {
@@ -32,7 +33,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/orders/${orderId}/portal`, { headers: ACTOR_HEADERS });
+    const res = await fetch(`/api/orders/${orderId}/portal`, shopFetch);
     const json = await res.json();
     if (!json.ok) {
       setNote(json.error?.message ?? "Failed to load portal");
@@ -59,7 +60,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
     try {
       const res = await fetch(`/api/orders/${orderId}/portal/messages`, {
         method: "POST",
-        headers: { ...ACTOR_HEADERS, "Content-Type": "application/json" },
+        ...shopJsonFetch,
         body: JSON.stringify({ body }),
       });
       const json = await res.json();
@@ -97,7 +98,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
       }
       const res = await fetch(`/api/orders/${orderId}/portal/photos`, {
         method: "POST",
-        headers: { ...ACTOR_HEADERS, "Content-Type": "application/json" },
+        ...shopJsonFetch,
         body: JSON.stringify({
           mimeType: m[1],
           imageBase64: m[2],

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { fail } from "@/lib/api";
+import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
 import { MemoryRateLimitStore } from "@/lib/security/rate-limit-store/memory-store";
 import { RedisRateLimitStore } from "@/lib/security/rate-limit-store/redis-store";
 import { RateLimitStore } from "@/lib/security/rate-limit-store/types";
@@ -13,6 +14,10 @@ if (process.env.RATE_LIMIT_REDIS_URL) {
 }
 
 function getClientId(request: NextRequest) {
+  const fromSession = readShopSessionFromCookie(request.cookies?.get(SHOP_SESSION_COOKIE)?.value);
+  if (fromSession) {
+    return `user:${fromSession.userId}`;
+  }
   return (
     request.headers.get("x-forwarded-for") ??
     request.headers.get("x-real-ip") ??

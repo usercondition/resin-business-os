@@ -12,10 +12,10 @@ type EmailMessage = {
   customer: { fullName: string; email?: string | null };
 };
 
-const ACTOR_HEADERS = {
-  "Content-Type": "application/json",
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
+const shopFetch: RequestInit = { credentials: "include" };
+const shopJsonFetch: RequestInit = {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
 };
 
 export default function MessagesPage() {
@@ -35,9 +35,7 @@ export default function MessagesPage() {
   );
 
   const loadMessages = useCallback(async () => {
-    const response = await fetch(`/api/messages/email?page=1&pageSize=50&search=${encodeURIComponent(search)}`, {
-      headers: ACTOR_HEADERS,
-    });
+    const response = await fetch(`/api/messages/email?page=1&pageSize=50&search=${encodeURIComponent(search)}`, shopFetch);
     const json = await response.json();
     if (json.ok) {
       setMessages(json.data.items ?? []);
@@ -60,7 +58,7 @@ export default function MessagesPage() {
 
     const response = await fetch("/api/messages/email/reply", {
       method: "POST",
-      headers: ACTOR_HEADERS,
+      ...shopJsonFetch,
       body: JSON.stringify({
         customerId: selectedMessage.customerId,
         inReplyToMessageId: selectedMessage.id,
@@ -82,7 +80,7 @@ export default function MessagesPage() {
 
     const response = await fetch("/api/messages/email/forward", {
       method: "POST",
-      headers: ACTOR_HEADERS,
+      ...shopJsonFetch,
       body: JSON.stringify({
         customerId: selectedMessage.customerId,
         sourceMessageId: selectedMessage.id,

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { DeliveryStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@prisma/client";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { formatUsd } from "@/lib/format-money";
 
@@ -69,10 +69,10 @@ type NewCustomerFields = {
   notes: string;
 };
 
-const ACTOR_HEADERS = {
-  "Content-Type": "application/json",
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
+const shopFetch: RequestInit = { credentials: "include" };
+const shopJsonFetch: RequestInit = {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
 };
 
 function specNotesFromJson(json: unknown): string {
@@ -134,15 +134,11 @@ export default function OrdersPage() {
   );
   const computedTotal = subtotal + form.tax - form.discount;
 
-  useEffect(() => {
-    void refreshData();
-  }, []);
-
-  async function refreshData() {
+  const refreshData = useCallback(async () => {
     try {
       const [customerRes, orderRes] = await Promise.all([
-        fetch("/api/customers?page=1&pageSize=200", { headers: ACTOR_HEADERS }),
-        fetch("/api/orders?page=1&pageSize=200", { headers: ACTOR_HEADERS }),
+        fetch("/api/customers?page=1&pageSize=200", shopFetch),
+        fetch("/api/orders?page=1&pageSize=200", shopFetch),
       ]);
       const customersJson = await customerRes.json();
       const ordersJson = await orderRes.json();
@@ -151,7 +147,11 @@ export default function OrdersPage() {
     } catch {
       setMessage("Failed to load order data");
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    void refreshData();
+  }, [refreshData]);
 
   function updateItem(index: number, patch: Partial<ItemInput>) {
     setForm((prev) => {
@@ -246,7 +246,7 @@ export default function OrdersPage() {
 
       const response = await fetch("/api/orders", {
         method: "POST",
-        headers: ACTOR_HEADERS,
+        ...shopJsonFetch,
         body: JSON.stringify(payload),
       });
       const json = await response.json();
@@ -271,7 +271,7 @@ export default function OrdersPage() {
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
         method: "DELETE",
-        headers: ACTOR_HEADERS,
+        ...shopFetch,
       });
       const json = await response.json();
       if (!json.ok) {
@@ -289,9 +289,7 @@ export default function OrdersPage() {
 
   async function copyClientEditOrderLink(orderId: string) {
     try {
-      const response = await fetch(`/api/orders/${orderId}/public-order-link`, {
-        headers: ACTOR_HEADERS,
-      });
+      const response = await fetch(`/api/orders/${orderId}/public-order-link`, shopFetch);
       const json = await response.json();
       if (!json.ok) {
         throw new Error(json.error?.message ?? "Could not generate client order link");
@@ -353,7 +351,7 @@ export default function OrdersPage() {
 
       const response = await fetch(`/api/orders/${editingOrderId}`, {
         method: "PUT",
-        headers: ACTOR_HEADERS,
+        ...shopJsonFetch,
         body: JSON.stringify(payload),
       });
       const json = await response.json();

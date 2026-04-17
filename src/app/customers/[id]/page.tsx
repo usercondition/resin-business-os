@@ -20,7 +20,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     async function load() {
-      const response = await fetch(`/api/customers/${params.id}`);
+      const response = await fetch(`/api/customers/${params.id}`, { credentials: "include" });
       const json = await response.json();
       if (json.ok) {
         setData(json.data);

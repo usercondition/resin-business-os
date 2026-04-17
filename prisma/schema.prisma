@@ -220,6 +220,17 @@ model Order {
   progressPhotos OrderProgressPhoto[]
 }
 
+model MagicLinkToken {
+  id        String    @id @default(cuid())
+  email     String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+}
+
 model OrderPortalMessage {
   id          String               @id @default(cuid())
   orderId     String

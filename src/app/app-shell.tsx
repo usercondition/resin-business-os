@@ -26,7 +26,10 @@ function isPublicStandalonePath(pathname: string | null) {
   if (pathname === "/public/order-form" || pathname.startsWith("/public/order-form/")) {
     return true;
   }
-  return pathname === "/portal" || pathname.startsWith("/portal/");
+  if (pathname === "/portal" || pathname.startsWith("/portal/")) {
+    return true;
+  }
+  return pathname === "/login" || pathname.startsWith("/login/");
 }
 
 const MENU_GROUPS = [
@@ -65,6 +68,7 @@ export default function AppShell({ children }: Props) {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchLastX, setTouchLastX] = useState<number | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(THEME_KEY);
@@ -127,6 +131,16 @@ export default function AppShell({ children }: Props) {
     }
   }
 
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      await fetch("/api/auth/session", { method: "DELETE", credentials: "include" });
+      window.location.href = "/login";
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   function handleTouchEnd() {
     if (touchStartX === null || touchLastX === null) return;
     const delta = touchLastX - touchStartX;
@@ -169,6 +183,12 @@ export default function AppShell({ children }: Props) {
           Resin OS
         </Link>
         <div className="app-actions">
+          <button className="app-button" disabled={signingOut} onClick={() => void signOut()} type="button">
+            <span className="app-button-icon" aria-hidden>
+              ⎋
+            </span>
+            {signingOut ? "…" : "Sign out"}
+          </button>
           <button className="app-button desktop-only" onClick={toggleCompactMode} type="button">
             <span className="app-button-icon" aria-hidden>
               {isCompact ? "▢" : "▥"}

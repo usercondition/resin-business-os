@@ -8,6 +8,11 @@ const optionalUrl = z.preprocess(
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
+  /** Sole-operator sign-in: only this email may request a magic link. */
+  APP_OWNER_EMAIL: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.string().email().optional(),
+  ),
   APP_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.preprocess(
     (v) => (v === "" || v === undefined || v === null ? undefined : v),

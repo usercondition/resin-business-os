@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type ImportRow = {
   id: string;
@@ -18,36 +18,37 @@ type MappingProfile = {
   valueJson: { fieldMap?: Record<string, string>; notes?: string };
 };
 
+const shopFetch: RequestInit = { credentials: "include" };
+const shopJsonFetch: RequestInit = {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
+};
+
 export default function OpsImportsPage() {
   const [duplicates, setDuplicates] = useState<ImportRow[]>([]);
   const [profiles, setProfiles] = useState<MappingProfile[]>([]);
   const [profileKey, setProfileKey] = useState("facebook-default");
   const [fieldMapJson, setFieldMapJson] = useState('{"fullName":"name","externalSourceId":"listing_id"}');
   const [message, setMessage] = useState("Ready");
-  const headers = {
-    "Content-Type": "application/json",
-    "x-user-id": "smoke-admin-1",
-    "x-user-role": "ADMIN",
-  };
 
-  async function refreshData() {
-    const duplicateResp = await fetch("/api/imports/duplicates", { headers });
+  const refreshData = useCallback(async () => {
+    const duplicateResp = await fetch("/api/imports/duplicates", shopFetch);
     const duplicateJson = await duplicateResp.json();
     setDuplicates(duplicateJson.data ?? []);
 
-    const profileResp = await fetch("/api/imports/mapping-profiles", { headers });
+    const profileResp = await fetch("/api/imports/mapping-profiles", shopFetch);
     const profileJson = await profileResp.json();
     setProfiles(profileJson.data ?? []);
-  }
+  }, []);
 
   useEffect(() => {
     void refreshData();
-  }, []);
+  }, [refreshData]);
 
   async function resolveDuplicate(id: string, resolution: "accept_duplicate" | "force_commit" | "skip") {
     const response = await fetch("/api/imports/duplicates", {
       method: "PATCH",
-      headers,
+      ...shopJsonFetch,
       body: JSON.stringify({ importRowId: id, resolution }),
     });
 
@@ -61,7 +62,7 @@ export default function OpsImportsPage() {
       const parsedMap = JSON.parse(fieldMapJson) as Record<string, string>;
       const response = await fetch("/api/imports/mapping-profiles", {
         method: "POST",
-        headers,
+        ...shopJsonFetch,
         body: JSON.stringify({ key: profileKey, fieldMap: parsedMap }),
       });
       const json = await response.json();

@@ -28,9 +28,10 @@ type Metrics = {
   }>;
 };
 
-const ACTOR_HEADERS = {
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
+const shopFetch: RequestInit = { credentials: "include" };
+const shopJsonFetch: RequestInit = {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
 };
 
 export default function DashboardPage() {
@@ -38,7 +39,7 @@ export default function DashboardPage() {
   const [message, setMessage] = useState("Loading...");
 
   async function loadData() {
-    const response = await fetch("/api/dashboard", { headers: ACTOR_HEADERS });
+    const response = await fetch("/api/dashboard", shopFetch);
     const json = await response.json();
     if (json.ok) {
       setMetrics(json.data);
@@ -51,7 +52,7 @@ export default function DashboardPage() {
   async function runReminders() {
     const response = await fetch("/api/reminders", {
       method: "POST",
-      headers: ACTOR_HEADERS,
+      ...shopJsonFetch,
     });
     const json = await response.json();
     setMessage(json.ok ? `Reminders generated: ${json.data.generated}` : `Reminder run failed: ${json.error?.message}`);

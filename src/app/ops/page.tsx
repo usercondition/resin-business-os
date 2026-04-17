@@ -11,6 +11,7 @@ type ApiResult = {
 async function callApi(path: string, method: string, body?: unknown): Promise<ApiResult> {
   const response = await fetch(path, {
     method,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },

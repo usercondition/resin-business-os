@@ -3,7 +3,8 @@ import { hexHmacSha256 } from "@/lib/security/webhook-hmac";
 
 export type OutboundEmailEvent =
   | "email.reply_requested"
-  | "email.forward_requested";
+  | "email.forward_requested"
+  | "app.magic_link_requested";
 
 /**
  * POSTs a signed JSON payload to your n8n Webhook URL so a workflow can send mail (Gmail/SMTP/Resend).

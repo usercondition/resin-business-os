@@ -17,11 +17,7 @@ type OrderRow = {
   customer: { fullName: string };
 };
 
-const ACTOR_HEADERS = {
-  "Content-Type": "application/json",
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
-};
+const shopFetch: RequestInit = { credentials: "include" };
 
 const CLOSED_ORDER_STATUSES = new Set(["CLOSED", "CANCELLED"]);
 
@@ -33,7 +29,7 @@ export default function ActiveOrdersPage() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await fetch("/api/orders?page=1&pageSize=200", { headers: ACTOR_HEADERS });
+        const response = await fetch("/api/orders?page=1&pageSize=200", shopFetch);
         const json = await response.json();
         if (!json.ok) {
           throw new Error(json.error?.message ?? "Failed to load orders");

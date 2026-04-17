@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { OrderPortalPanel } from "@/components/order-portal-panel";
 
-const ACTOR_HEADERS = {
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
-};
+const shopFetch: RequestInit = { credentials: "include" };
 
 type OrderDetailResponse = {
   order: {
@@ -40,7 +37,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
   useEffect(() => {
     async function load() {
-      const response = await fetch(`/api/orders/${params.id}`, { headers: ACTOR_HEADERS });
+      const response = await fetch(`/api/orders/${params.id}`, shopFetch);
       const json = await response.json();
       if (json.ok) {
         setData(json.data);

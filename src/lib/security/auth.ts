@@ -2,13 +2,15 @@ import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
 
 import { fail } from "@/lib/api";
+import { env } from "@/lib/env";
+import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
 
 export type RequestActor = {
   userId: string;
   role: UserRole;
 };
 
-export function getRequestActor(request: NextRequest): RequestActor | null {
+function getActorFromHeaders(request: NextRequest): RequestActor | null {
   const userId = request.headers.get("x-user-id");
   const roleHeader = request.headers.get("x-user-role");
 
@@ -22,6 +24,23 @@ export function getRequestActor(request: NextRequest): RequestActor | null {
   }
 
   return { userId, role: role as UserRole };
+}
+
+/**
+ * Resolves the signed shop session cookie first. In production, header-based auth is ignored
+ * so browser clients cannot spoof `x-user-id`. Headers remain available in development/test for Vitest.
+ */
+export function getRequestActor(request: NextRequest): RequestActor | null {
+  const fromCookie = readShopSessionFromCookie(request.cookies?.get(SHOP_SESSION_COOKIE)?.value);
+  if (fromCookie) {
+    return { userId: fromCookie.userId, role: fromCookie.role };
+  }
+
+  if (env.APP_ENV !== "production") {
+    return getActorFromHeaders(request);
+  }
+
+  return null;
 }
 
 export function requireAuth(request: NextRequest): RequestActor | Response {

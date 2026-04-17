@@ -17,9 +17,24 @@ export function fail(message: string, status = 400, details?: unknown) {
   return NextResponse.json({ ok: false, error: { message, details } }, { status });
 }
 
+/** Structured HTTP error for route handlers (handled by `handleRouteError`). */
+export class HttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number = 400,
+  ) {
+    super(message);
+    this.name = "HttpError";
+  }
+}
+
 export function handleRouteError(error: unknown) {
   if (error instanceof ZodError) {
     return fail("Validation failed", 422, error.flatten());
+  }
+
+  if (error instanceof HttpError) {
+    return fail(error.message, error.status);
   }
 
   if (error instanceof Error) {

@@ -12,11 +12,7 @@ type Customer = {
   notes?: string | null;
 };
 
-const ACTOR_HEADERS = {
-  "Content-Type": "application/json",
-  "x-user-id": "smoke-admin-1",
-  "x-user-role": "ADMIN",
-};
+const shopFetch: RequestInit = { credentials: "include" };
 
 export default function CustomerLookupPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -26,7 +22,7 @@ export default function CustomerLookupPage() {
   useEffect(() => {
     async function loadCustomers() {
       try {
-        const response = await fetch("/api/customers?page=1&pageSize=500", { headers: ACTOR_HEADERS });
+        const response = await fetch("/api/customers?page=1&pageSize=500", shopFetch);
         const json = await response.json();
         if (!json.ok) {
           throw new Error(json.error?.message ?? "Failed to load customers");
