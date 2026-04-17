@@ -4,17 +4,18 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const PUBLIC_INQUIRY_PATH = "/public/inquiry";
-const STAFF_SUCCESS = "/request/inquiry-success";
+const HUB_SUCCESS = "/request/inquiry-success";
 const PUBLIC_SUCCESS = "/public/inquiry/success";
 
-export type InquiryFormMode = "staff" | "public";
+/** `hub` = app-side preview with copy-link; `public` = shareable client URL. */
+export type InquiryFormMode = "hub" | "public";
 
 type Props = { mode: InquiryFormMode };
 
 export function InquiryForm({ mode }: Props) {
   const router = useRouter();
-  const isStaff = mode === "staff";
-  const successPath = isStaff ? STAFF_SUCCESS : PUBLIC_SUCCESS;
+  const isHub = mode === "hub";
+  const successPath = isHub ? HUB_SUCCESS : PUBLIC_SUCCESS;
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -75,7 +76,7 @@ export function InquiryForm({ mode }: Props) {
 
   return (
     <main className="mx-auto max-w-2xl py-2 md:py-4">
-      <div className={isStaff ? "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between" : ""}>
+      <div className={isHub ? "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between" : ""}>
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Inquiry</h1>
           <p className="minimal-muted mt-1 text-sm">
@@ -83,7 +84,7 @@ export function InquiryForm({ mode }: Props) {
             order form after you are ready.
           </p>
         </div>
-        {isStaff ? (
+        {isHub ? (
           <button className="app-button shrink-0 self-start sm:self-auto" onClick={copyInquiryLink} type="button">
             Copy inquiry link
           </button>

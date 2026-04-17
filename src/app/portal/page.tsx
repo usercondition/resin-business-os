@@ -80,8 +80,8 @@ export default function PortalLoginPage() {
         </button>
       </form>
       <p className="minimal-muted mt-6 text-center text-xs">
-        <a className="underline" href="/">
-          Staff: open main app
+        <a className="underline" href="/dashboard">
+          Open shop dashboard
         </a>
       </p>
     </main>

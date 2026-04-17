@@ -1,5 +1,5 @@
 type Props = {
-  /** Where “Submit another” sends the user (staff vs public form). */
+  /** Where “Submit another” sends the user (hub preview vs public form). */
   anotherHref: string;
 };
 

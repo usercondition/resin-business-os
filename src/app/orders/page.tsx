@@ -385,7 +385,7 @@ export default function OrdersPage() {
     <main className="mx-auto max-w-6xl px-4 py-4">
       <h1 className="text-xl font-semibold">All orders</h1>
       <p className="minimal-muted mt-1 text-sm">
-        Full order list and history. Use manual order entry below for direct staff-created orders.
+        Full order list and history. Use manual order entry below for orders you create directly in the app.
       </p>
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
@@ -808,7 +808,7 @@ export default function OrdersPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Existing orders</h2>
           <label className="inline-flex items-center gap-2 text-sm">
-            <input
+      <input
               checked={showInquiryDraftsOnly}
               onChange={(e) => setShowInquiryDraftsOnly(e.target.checked)}
               type="checkbox"

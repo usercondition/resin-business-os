@@ -6,10 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { formatUsd } from "@/lib/format-money";
 
 const PUBLIC_ORDER_PATH = "/public/order-form";
-const STAFF_SUCCESS = "/request/order-form-success";
+const HUB_SUCCESS = "/request/order-form-success";
 const PUBLIC_SUCCESS = "/public/order-form/success";
 
-export type PublicOrderFormMode = "staff" | "public";
+/** `hub` = signed-in app preview with copy-link tools; `public` = client-facing URL. */
+export type PublicOrderFormMode = "hub" | "public";
 
 type Line = {
   itemName: string;
@@ -30,8 +31,8 @@ export function PublicOrderForm({ mode }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
-  const isStaff = mode === "staff";
-  const successPath = isStaff ? STAFF_SUCCESS : PUBLIC_SUCCESS;
+  const isHub = mode === "hub";
+  const successPath = isHub ? HUB_SUCCESS : PUBLIC_SUCCESS;
   const isEditFlow = mode === "public" && Boolean(token);
 
   const [fullName, setFullName] = useState("");
@@ -194,7 +195,7 @@ export function PublicOrderForm({ mode }: Props) {
 
   return (
     <main className="mx-auto max-w-3xl py-2 md:py-4">
-      <div className={isStaff ? "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between" : ""}>
+      <div className={isHub ? "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between" : ""}>
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{isEditFlow ? "Review your order" : "Order form"}</h1>
           <p className="minimal-muted mt-1 text-sm">
@@ -203,7 +204,7 @@ export function PublicOrderForm({ mode }: Props) {
               : "Use this after you are ready to place an order: billing contact, shipping address, each line item with unit price, materials, and build notes."}
           </p>
         </div>
-        {isStaff ? (
+        {isHub ? (
           <button className="app-button shrink-0 self-start sm:self-auto" onClick={copyOrderFormLink} type="button">
             Copy full order form link
           </button>

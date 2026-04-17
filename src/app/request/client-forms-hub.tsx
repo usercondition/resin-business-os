@@ -50,7 +50,7 @@ export function ClientFormsHub() {
       </div>
 
       <section className="minimal-panel mt-6">
-        <h3 className="text-sm font-semibold">How staff should use this</h3>
+        <h3 className="text-sm font-semibold">How to use this</h3>
         <ol className="minimal-muted mt-2 list-decimal space-y-1 pl-5 text-sm">
           <li>Send inquiry link first.</li>
           <li>After inquiry arrives, open the draft order in Orders.</li>

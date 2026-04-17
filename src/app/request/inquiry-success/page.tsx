@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function InquirySuccessStaffPage() {
+export default function InquirySuccessHubPage() {
   return (
     <main className="mx-auto max-w-md py-8">
       <section className="minimal-panel">

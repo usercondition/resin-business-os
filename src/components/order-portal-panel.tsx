@@ -26,7 +26,7 @@ type Props = {
 export function OrderPortalPanel({ orderId, portalUrl }: Props) {
   const [feed, setFeed] = useState<Feed | null>(null);
   const [note, setNote] = useState("Loading portal…");
-  const [staffReply, setStaffReply] = useState("");
+  const [shopReply, setShopReply] = useState("");
   const [caption, setCaption] = useState("");
   const [visibleToClient, setVisibleToClient] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -39,7 +39,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
       return;
     }
     setFeed(json.data);
-    setNote("Portal loaded — clients use the link below with their name + order number.");
+    setNote("Portal loaded — share the link below; customers sign in with their name + order number.");
   }, [orderId]);
 
   useEffect(() => {
@@ -51,9 +51,9 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
     setNote("Portal link copied.");
   }
 
-  async function sendStaffMessage(e: FormEvent) {
+  async function sendShopMessage(e: FormEvent) {
     e.preventDefault();
-    const body = staffReply.trim();
+    const body = shopReply.trim();
     if (!body) return;
     setBusy(true);
     try {
@@ -66,7 +66,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
       if (!json.ok) {
         throw new Error(json.error?.message ?? "Failed");
       }
-      setStaffReply("");
+      setShopReply("");
       await load();
     } catch (err) {
       setNote(err instanceof Error ? err.message : "Send failed");
@@ -143,19 +143,19 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
             {feed.messages.map((m) => (
               <li className="rounded-md border border-[var(--border)] px-2 py-1.5" key={m.id}>
                 <span className="text-xs text-[var(--muted)]">
-                  {m.author === "STAFF" ? m.staffName ?? "Staff" : "Client"} · {new Date(m.createdAt).toLocaleString()}
+                  {m.author === "STAFF" ? m.staffName ?? "You" : "Customer"} · {new Date(m.createdAt).toLocaleString()}
                 </span>
                 <p className="mt-0.5 whitespace-pre-wrap">{m.body}</p>
               </li>
             ))}
           </ul>
-          <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={sendStaffMessage}>
+          <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={sendShopMessage}>
             <label className="min-w-0 flex-1 text-sm">
-              Reply to client
+              Reply to customer
               <textarea
                 className="mt-1 min-h-16 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                value={staffReply}
-                onChange={(e) => setStaffReply(e.target.value)}
+                value={shopReply}
+                onChange={(e) => setShopReply(e.target.value)}
               />
             </label>
             <button className="minimal-cta shrink-0 text-sm" disabled={busy} type="submit">
@@ -171,7 +171,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
                 <img alt="" className="max-h-36 w-full object-contain" src={p.dataUrl} />
                 {p.caption ? <p className="minimal-muted mt-1">{p.caption}</p> : null}
                 <p className="minimal-muted mt-1">
-                  {p.visibleToClient ? "Visible to client" : "Staff only"} · {new Date(p.createdAt).toLocaleString()}
+                  {p.visibleToClient ? "Visible on portal" : "Internal only"} · {new Date(p.createdAt).toLocaleString()}
                 </p>
               </li>
             ))}
@@ -191,7 +191,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input checked={visibleToClient} onChange={(e) => setVisibleToClient(e.target.checked)} type="checkbox" />
-              Show to client on portal
+              Show on customer portal
             </label>
             <button className="app-button w-fit text-sm" disabled={busy} type="submit">
               Upload photo

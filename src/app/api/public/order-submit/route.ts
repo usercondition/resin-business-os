@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * Public “full order” intake: creates a real Order + line items (and customer if new).
- * Rate-limited; staff should prefer hub entry for sensitive jobs.
+ * Rate-limited; prefer creating sensitive jobs from the in-app hub when possible.
  */
 export async function POST(request: NextRequest) {
   try {
