@@ -1,6 +1,7 @@
 ﻿import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { toPrismaJson } from "@/lib/prisma-json";
 
 const csvImportSchema = z.object({
   source: z.string().min(2),
@@ -55,12 +56,12 @@ export async function stageCsvImport(input: CsvImportInput) {
       endedAt: new Date(),
       recordsProcessed: input.rows.length,
       recordsFailed: 0,
-      errorDetailsJson: {
+      errorDetailsJson: toPrismaJson({
         source: input.source,
         mappingProfileKey: input.mappingProfileKey ?? null,
         mappingProfile: mappingProfile?.valueJson ?? null,
         previewRows: input.rows.slice(0, 10),
-      },
+      }),
     },
   });
 
@@ -68,7 +69,7 @@ export async function stageCsvImport(input: CsvImportInput) {
     data: input.rows.map((row, index) => ({
       syncLogId: sync.id,
       rowIndex: index,
-      rawJson: row,
+      rawJson: toPrismaJson(row),
       status: "staged",
     })),
   });

@@ -1,6 +1,7 @@
 ﻿import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { toPrismaJson } from "@/lib/prisma-json";
 
 const commitImportSchema = z.object({
   syncLogId: z.string().cuid(),
@@ -190,7 +191,7 @@ export async function commitStagedImport(input: z.infer<typeof commitImportSchem
       await db.importRow.update({
         where: { id: importRow.id },
         data: {
-          mappedJson: mapped,
+          mappedJson: toPrismaJson(mapped),
           dedupeKey,
           status: result.skipped ? "skipped" : result.duplicate ? "duplicate" : "committed",
           errorMessage: result.skipped ? "Skipped due to missing required fields" : null,
@@ -207,10 +208,10 @@ export async function commitStagedImport(input: z.infer<typeof commitImportSchem
         endedAt: new Date(),
         recordsProcessed: importRows.length,
         recordsFailed: skipped,
-        errorDetailsJson: {
+        errorDetailsJson: toPrismaJson({
           ...(payload ?? {}),
           commitSummary: { created, updated, skipped, duplicates },
-        },
+        }),
       },
     });
   }

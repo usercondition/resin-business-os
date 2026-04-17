@@ -1,4 +1,5 @@
 ﻿import { db } from "@/lib/db";
+import { toPrismaJson } from "@/lib/prisma-json";
 
 export async function emitDomainEvent(input: {
   eventName: string;
@@ -33,10 +34,10 @@ export async function emitDomainEvent(input: {
       entityId: input.entityId,
       status: "queued",
       startedAt: new Date(),
-      errorDetailsJson: {
+      errorDetailsJson: toPrismaJson({
         eventName: input.eventName,
         payload: input.payload,
-      },
+      }),
     },
   });
 

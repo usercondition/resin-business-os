@@ -3,6 +3,7 @@
 import { DeliveryStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { toPrismaJsonOptional } from "@/lib/prisma-json";
 import { createAuditLog } from "@/server/audit/audit-service";
 import { customerInputSchema } from "@/server/domain/common/validation";
 import { createCustomer } from "@/server/domain/customers/customer-service";
@@ -114,7 +115,7 @@ export async function createOrder(
           unitPrice: item.unitPrice,
           materialType: item.materialType,
           color: item.color,
-          printSpecJson: item.printSpec,
+          printSpecJson: toPrismaJsonOptional(item.printSpec),
           lineTotal: item.quantity * item.unitPrice,
           sortOrder: index,
         })),
@@ -214,7 +215,7 @@ export async function updateOrder(
             unitPrice: item.unitPrice,
             materialType: item.materialType,
             color: item.color,
-            printSpecJson: item.printSpec,
+            printSpecJson: toPrismaJsonOptional(item.printSpec),
             lineTotal: item.quantity * item.unitPrice,
             sortOrder: index,
           })),

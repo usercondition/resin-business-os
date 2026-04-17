@@ -1,6 +1,7 @@
 ﻿import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { toPrismaJson } from "@/lib/prisma-json";
 
 const sheetSyncSchema = z.object({
   spreadsheetId: z.string().min(10),
@@ -56,12 +57,12 @@ export async function stageGoogleSheetSync(input: GoogleSheetsSyncInput) {
       endedAt: new Date(),
       recordsProcessed: input.rows.length,
       recordsFailed: 0,
-      errorDetailsJson: {
+      errorDetailsJson: toPrismaJson({
         worksheetName: input.worksheetName,
         mappingProfileKey: input.mappingProfileKey ?? null,
         mappingProfile: mappingProfile?.valueJson ?? null,
         previewRows: input.rows.slice(0, 10),
-      },
+      }),
     },
   });
 
@@ -69,7 +70,7 @@ export async function stageGoogleSheetSync(input: GoogleSheetsSyncInput) {
     data: input.rows.map((row, index) => ({
       syncLogId: sync.id,
       rowIndex: index,
-      rawJson: row,
+      rawJson: toPrismaJson(row),
       status: "staged",
     })),
   });

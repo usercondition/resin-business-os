@@ -1,6 +1,7 @@
 ﻿import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { toPrismaJson } from "@/lib/prisma-json";
 
 const mappingProfileSchema = z.object({
   key: z.string().min(2),
@@ -13,31 +14,37 @@ export function parseMappingProfile(input: unknown) {
 }
 
 export async function upsertMappingProfile(input: z.infer<typeof mappingProfileSchema>, actorUserId?: string) {
-  return db.setting.upsert({
+  const valueJson = toPrismaJson({
+    fieldMap: input.fieldMap,
+    notes: input.notes ?? null,
+  });
+
+  const existing = await db.setting.findFirst({
     where: {
-      scopeType_scopeId_key: {
-        scopeType: "import_mapping_profile",
-        scopeId: null,
-        key: input.key,
-      },
-    },
-    create: {
       scopeType: "import_mapping_profile",
       scopeId: null,
       key: input.key,
-      valueJson: {
-        fieldMap: input.fieldMap,
-        notes: input.notes ?? null,
-      },
-      updatedBy: actorUserId,
     },
-    update: {
-      valueJson: {
-        fieldMap: input.fieldMap,
-        notes: input.notes ?? null,
+  });
+
+  if (existing) {
+    return db.setting.update({
+      where: { id: existing.id },
+      data: {
+        valueJson,
+        updatedBy: actorUserId,
+        updatedAt: new Date(),
       },
+    });
+  }
+
+  return db.setting.create({
+    data: {
+      scopeType: "import_mapping_profile",
+      scopeId: null,
+      key: input.key,
+      valueJson,
       updatedBy: actorUserId,
-      updatedAt: new Date(),
     },
   });
 }
