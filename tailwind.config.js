@@ -6,7 +6,11 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        terminal: ["var(--font-terminal)", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace"],
+      },
+    },
   },
   plugins: [],
 };

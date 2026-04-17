@@ -1,10 +1,17 @@
 ﻿import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { JetBrains_Mono } from "next/font/google";
 
 import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
 
 import AppShell from "./app-shell";
 import "./globals.css";
+
+const terminalFont = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-terminal",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Resin Business OS",
@@ -16,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const hasStaffShopSession = readShopSessionFromCookie(shopCookie) !== null;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html className={terminalFont.variable} lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

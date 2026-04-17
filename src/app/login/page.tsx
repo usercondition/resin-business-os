@@ -53,7 +53,7 @@ function LoginForm() {
       {devLink ? (
         <p className="minimal-muted mt-3 break-all text-xs">
           Development link:{" "}
-          <a className="text-[var(--primary)] underline" href={devLink}>
+          <a className="link-terminal underline" href={devLink}>
             {devLink}
           </a>
         </p>

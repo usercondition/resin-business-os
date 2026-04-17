@@ -34,7 +34,7 @@ export function OrderIntakeStrip({ orderId, orderNumber, status }: Props) {
       <h2 className="text-base font-semibold">Intake &amp; client forms</h2>
       <p className="minimal-muted mt-1 text-sm">
         Copy shareable links (inquiry, quick spec, blank full order) from the{" "}
-        <Link className="font-medium text-[var(--primary)] underline" href="/intake">
+        <Link className="link-terminal font-medium underline" href="/intake">
           Intake
         </Link>{" "}
         page. For <strong>this order</strong>, use the button below so the client opens the prefilled full order form.

@@ -197,15 +197,15 @@ function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
       <h2 className="text-base font-semibold">Next steps</h2>
       <p className="minimal-muted mt-1 text-sm">
         Quick links:{" "}
-        <Link className="font-medium text-[var(--primary)] underline" href="/intake">
+        <Link className="link-terminal font-medium underline" href="/intake">
           Intake
         </Link>
         {" · "}
-        <Link className="font-medium text-[var(--primary)] underline" href="/orders/active">
+        <Link className="link-terminal font-medium underline" href="/orders/active">
           Active orders
         </Link>
         {" · "}
-        <Link className="font-medium text-[var(--primary)] underline" href="/messages">
+        <Link className="link-terminal font-medium underline" href="/messages">
           Messages
         </Link>
       </p>
@@ -218,7 +218,7 @@ function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
               <ul className="mt-2 space-y-1 pl-0">
                 {recent.map((o) => (
                   <li key={o.id}>
-                    <Link className="text-[var(--primary)] underline" href={`/orders/${o.id}`}>
+                    <Link className="link-terminal underline" href={`/orders/${o.id}`}>
                       {o.orderNumber}
                     </Link>
                     <span className="text-[var(--muted)]"> · {o.customerName}</span>
