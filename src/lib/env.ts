@@ -1,10 +1,24 @@
 ﻿import { z } from "zod";
 
+/**
+ * Optional HTTP(S) URLs in Railway are often pasted without a scheme — Zod `.url()` rejects those.
+ * Invalid / malformed values are treated as unset so one bad variable cannot take down the whole app.
+ */
+function normalizeOptionalHttpUrl(v: unknown): unknown {
+  if (v === "" || v === undefined || v === null) {
+    return undefined;
+  }
+  const raw = String(v).trim();
+  if (!raw) {
+    return undefined;
+  }
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`;
+  const parsed = z.string().url().safeParse(withScheme);
+  return parsed.success ? withScheme : undefined;
+}
+
 /** Empty env vars often become "" on hosts like Railway — treat as unset for optional URLs. */
-const optionalUrl = z.preprocess(
-  (v) => (v === "" || v === undefined || v === null ? undefined : v),
-  z.string().url().optional(),
-);
+const optionalUrl = z.preprocess(normalizeOptionalHttpUrl, z.string().url().optional());
 
 const optionalNonEmpty = z.preprocess(
   (v) => (v === "" || v === undefined || v === null ? undefined : v),
@@ -35,21 +49,27 @@ function normalizeAppUrlInput(v: unknown): unknown {
   return `https://${s}`;
 }
 
+/** Invalid optional emails (typos in Railway) should not crash boot — treat as unset. */
+function normalizeOptionalEmail(v: unknown): unknown {
+  if (v === "" || v === undefined || v === null) {
+    return undefined;
+  }
+  const s = String(v).trim();
+  if (!s) {
+    return undefined;
+  }
+  return z.string().email().safeParse(s).success ? s : undefined;
+}
+
 const envSchema = z.object({
   DATABASE_URL: z.preprocess((v) => (typeof v === "string" ? v.trim() : v), postgresDatabaseUrl),
   /** Sole-operator sign-in: only this email may request a magic link. */
-  APP_OWNER_EMAIL: z.preprocess(
-    (v) => (v === "" || v === undefined || v === null ? undefined : v),
-    z.string().email().optional(),
-  ),
+  APP_OWNER_EMAIL: z.preprocess(normalizeOptionalEmail, z.string().email().optional()),
   /**
    * Receives Resend alerts when someone submits the public inquiry or print-request form.
    * If unset, falls back to `APP_OWNER_EMAIL` when Resend is configured.
    */
-  NEW_REQUEST_NOTIFICATION_EMAIL: z.preprocess(
-    (v) => (v === "" || v === undefined || v === null ? undefined : v),
-    z.string().email().optional(),
-  ),
+  NEW_REQUEST_NOTIFICATION_EMAIL: z.preprocess(normalizeOptionalEmail, z.string().email().optional()),
   APP_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.preprocess(
     normalizeAppUrlInput,

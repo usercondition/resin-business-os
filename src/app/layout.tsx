@@ -1,7 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { JetBrains_Mono } from "next/font/google";
-import { unstable_noStore } from "next/cache";
 
 import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
 
@@ -23,7 +22,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  unstable_noStore();
   const shopCookie = cookies().get(SHOP_SESSION_COOKIE)?.value;
   const hasStaffShopSession = readShopSessionFromCookie(shopCookie) !== null;
 
