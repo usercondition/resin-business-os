@@ -65,6 +65,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         Back to orders
       </button>
       <h1 className="text-xl font-semibold">Order</h1>
+      <p className="minimal-muted mt-1 text-sm">Complete order context: workflow state, client updates, and timeline.</p>
       <p className="minimal-muted mt-1 text-sm">{message}</p>
 
       <section className="minimal-panel mt-3">

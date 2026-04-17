@@ -8,6 +8,7 @@ type EmailMessage = {
   direction: string;
   messageText: string;
   createdAt: string;
+  messageType: "email" | "portal";
   customer: { fullName: string; email?: string | null };
 };
 
@@ -101,12 +102,7 @@ export default function MessagesPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-4">
       <h1 className="text-xl font-semibold">Email Message Center</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        Inbound mail is created via n8n → <code className="text-xs">/api/webhooks/email/inbound</code>. Outbound reply
-        / forward posts to <code className="text-xs">N8N_EMAIL_OUTBOUND_WEBHOOK_URL</code>. Import the JSON templates
-        under <code className="text-xs">docs/</code> (inbound + outbound). Customers need an email on file to reply
-        from the app.
-      </p>
+      <p className="minimal-muted mt-1 text-sm">Unified inbox for email and client-portal messages.</p>
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -134,7 +130,9 @@ export default function MessagesPage() {
                 type="button"
               >
                 <p className="font-semibold">{msg.customer.fullName}</p>
-                <p className="minimal-muted text-xs">{msg.direction} - {new Date(msg.createdAt).toLocaleString()}</p>
+                <p className="minimal-muted text-xs">
+                  {msg.messageType} · {msg.direction} · {new Date(msg.createdAt).toLocaleString()}
+                </p>
                 <p className="minimal-muted mt-1 line-clamp-2 text-xs">{msg.messageText}</p>
               </button>
             ))}
@@ -151,56 +149,62 @@ export default function MessagesPage() {
               <pre className="mt-2 max-h-44 overflow-auto rounded-md border border-[var(--border)] p-3 text-xs">
                 {selectedMessage.messageText}
               </pre>
-              {!selectedMessage.customer.email ? (
+              {!selectedMessage.customer.email && selectedMessage.messageType === "email" ? (
                 <p className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
                   This customer has no email on file. Add an email on the customer record before reply-to-customer
                   flows will work in n8n/Gmail.
                 </p>
               ) : null}
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <form className="grid gap-2" onSubmit={submitReply}>
-                  <h3 className="text-sm font-semibold">Reply</h3>
-                  <input
-                    className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                    value={replySubject}
-                    onChange={(event) => setReplySubject(event.target.value)}
-                    required
-                  />
-                  <textarea
-                    className="min-h-24 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                    value={replyBody}
-                    onChange={(event) => setReplyBody(event.target.value)}
-                    required
-                  />
-                  <button className="minimal-cta" type="submit">Send Reply</button>
-                </form>
+              {selectedMessage.messageType === "email" ? (
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <form className="grid gap-2" onSubmit={submitReply}>
+                    <h3 className="text-sm font-semibold">Reply</h3>
+                    <input
+                      className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={replySubject}
+                      onChange={(event) => setReplySubject(event.target.value)}
+                      required
+                    />
+                    <textarea
+                      className="min-h-24 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={replyBody}
+                      onChange={(event) => setReplyBody(event.target.value)}
+                      required
+                    />
+                    <button className="minimal-cta" type="submit">Send Reply</button>
+                  </form>
 
-                <form className="grid gap-2" onSubmit={submitForward}>
-                  <h3 className="text-sm font-semibold">Forward</h3>
-                  <input
-                    className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                    placeholder="to@email.com"
-                    type="email"
-                    value={forwardTo}
-                    onChange={(event) => setForwardTo(event.target.value)}
-                    required
-                  />
-                  <input
-                    className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                    value={forwardSubject}
-                    onChange={(event) => setForwardSubject(event.target.value)}
-                    required
-                  />
-                  <textarea
-                    className="min-h-24 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                    value={forwardBody}
-                    onChange={(event) => setForwardBody(event.target.value)}
-                    required
-                  />
-                  <button className="minimal-cta" type="submit">Forward Email</button>
-                </form>
-              </div>
+                  <form className="grid gap-2" onSubmit={submitForward}>
+                    <h3 className="text-sm font-semibold">Forward</h3>
+                    <input
+                      className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      placeholder="to@email.com"
+                      type="email"
+                      value={forwardTo}
+                      onChange={(event) => setForwardTo(event.target.value)}
+                      required
+                    />
+                    <input
+                      className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={forwardSubject}
+                      onChange={(event) => setForwardSubject(event.target.value)}
+                      required
+                    />
+                    <textarea
+                      className="min-h-24 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={forwardBody}
+                      onChange={(event) => setForwardBody(event.target.value)}
+                      required
+                    />
+                    <button className="minimal-cta" type="submit">Forward Email</button>
+                  </form>
+                </div>
+              ) : (
+                <p className="minimal-muted mt-3 text-sm">
+                  This is a portal message. Reply from the order detail page in the Client portal panel.
+                </p>
+              )}
             </>
           ) : (
             <p className="minimal-muted mt-2 text-sm">No message selected.</p>

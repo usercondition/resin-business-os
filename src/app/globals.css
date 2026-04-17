@@ -4,17 +4,17 @@
 
 :root {
   color-scheme: light;
-  --bg: #f4f6fb;
+  --bg: #f6f7f9;
   --panel: #ffffff;
-  --border: #e1e7f0;
-  --text: #0f172a;
-  --muted: #64748b;
-  --primary: #0d6e5c;
-  --primary-hover: #0a5a4b;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #0f766e;
+  --primary-hover: #0d9488;
   --primary-text: #f8fafc;
-  --accent: #3b6ea5;
-  --ring: rgba(13, 110, 92, 0.35);
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --accent: #2563eb;
+  --ring: rgba(15, 118, 110, 0.3);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
 :root.dark {
@@ -40,7 +40,15 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    "Inter",
+    "Segoe UI",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.01em;
 }
 
 a {
@@ -56,10 +64,10 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(12px);
   box-shadow: var(--shadow);
 }
 
@@ -88,8 +96,8 @@ a {
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
-  border-radius: 10px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 7px 11px;
   font-size: 0.85rem;
   cursor: pointer;
   display: inline-flex;
@@ -98,8 +106,8 @@ a {
 }
 
 .app-button:hover {
-  border-color: color-mix(in srgb, var(--border) 25%, var(--accent));
-  background: color-mix(in srgb, var(--panel) 70%, var(--bg));
+  border-color: color-mix(in srgb, var(--border) 20%, var(--accent));
+  background: color-mix(in srgb, var(--panel) 80%, var(--bg));
 }
 
 .app-button:focus-visible,
@@ -135,14 +143,14 @@ a {
   position: fixed;
   top: 0;
   left: 0;
-  width: 270px;
+  width: 278px;
   height: 100vh;
   transform: translateX(-100%);
   transition: transform 160ms ease;
   z-index: 65;
   background: var(--panel);
   border-right: 1px solid var(--border);
-  padding: 72px 16px 16px;
+  padding: 72px 14px 14px;
 }
 
 .app-menu.open {
@@ -206,14 +214,15 @@ a {
   gap: 8px;
   padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   text-decoration: none;
   font-size: 0.9rem;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
 
 .app-menu-nav a.active {
   border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 12%, var(--panel));
+  background: color-mix(in srgb, var(--primary) 10%, var(--panel));
   color: var(--text);
 }
 
@@ -230,6 +239,7 @@ a {
 .app-menu-nav a:hover {
   border-color: color-mix(in srgb, var(--border) 30%, var(--text));
   background: color-mix(in srgb, var(--panel) 85%, var(--bg));
+  transform: translateY(-1px);
 }
 
 .app-menu.compact .app-menu-subtitle,
@@ -266,8 +276,8 @@ a {
 .minimal-panel {
   border: 1px solid var(--border);
   background: var(--panel);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
 }
 
@@ -277,7 +287,7 @@ a {
 
 .minimal-cta {
   display: inline-block;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 16px;
   text-decoration: none;
   border: 1px solid var(--primary);

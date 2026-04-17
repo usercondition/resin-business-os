@@ -91,6 +91,7 @@ export default function PortalOrderPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{order.orderNumber}</h1>
           <p className="minimal-muted mt-1 text-sm">{order.customerName}</p>
+          <p className="minimal-muted mt-1 text-sm">Review status updates, progress photos, and chat with the shop.</p>
         </div>
         <button className="app-button text-sm" onClick={() => void signOut()} type="button">
           Sign out

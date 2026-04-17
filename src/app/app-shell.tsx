@@ -33,7 +33,6 @@ const MENU_GROUPS = [
   {
     title: "Hub",
     items: [
-      { href: "/", label: "Home", icon: "⌂" },
       { href: "/dashboard", label: "Dashboard", icon: "◫" },
       { href: "/portal", label: "Customer portal", icon: "◐" },
     ],
@@ -41,10 +40,10 @@ const MENU_GROUPS = [
   {
     title: "Operations",
     items: [
-      { href: "/ops", label: "Quick Ops", icon: "✦" },
+      { href: "/orders/active", label: "Active orders", icon: "◉" },
+      { href: "/orders", label: "All orders", icon: "▣" },
       { href: "/request", label: "Client forms", icon: "✎" },
       { href: "/messages", label: "Messages", icon: "✉" },
-      { href: "/orders", label: "Orders", icon: "▣" },
       { href: "/customers", label: "Customers", icon: "◉" },
       { href: "/inventory", label: "Inventory", icon: "▤" },
     ],
@@ -165,7 +164,7 @@ export default function AppShell({ children }: Props) {
           </span>
           Menu
         </button>
-        <Link className="app-brand" href="/">
+        <Link className="app-brand" href="/dashboard">
           <span className="app-brand-dot" aria-hidden />
           Resin OS
         </Link>

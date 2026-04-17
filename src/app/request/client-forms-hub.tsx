@@ -21,11 +21,11 @@ export function ClientFormsHub() {
       </p>
       {note ? <p className="minimal-panel mt-3 text-sm">{note}</p> : null}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <section className="minimal-panel flex flex-col gap-3">
+      <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
+        <section className="minimal-panel flex h-full flex-col gap-3">
           <h2 className="text-base font-semibold">Inquiry (initial contact)</h2>
           <p className="minimal-muted text-sm">Creates a lead + customer record. No line-item pricing.</p>
-          <button className="app-button" onClick={() => void copyUrl("/public/inquiry", "Inquiry link")} type="button">
+          <button className="app-button mt-auto" onClick={() => void copyUrl("/public/inquiry", "Inquiry link")} type="button">
             Copy inquiry link
           </button>
           <Link className="minimal-cta text-center text-sm" href="/request/preview-inquiry">
@@ -33,11 +33,11 @@ export function ClientFormsHub() {
           </Link>
         </section>
 
-        <section className="minimal-panel flex flex-col gap-3">
+        <section className="minimal-panel flex h-full flex-col gap-3">
           <h2 className="text-base font-semibold">Full order form</h2>
           <p className="minimal-muted text-sm">Creates a real order with items, tax/discount, and customer address.</p>
           <button
-            className="app-button"
+            className="app-button mt-auto"
             onClick={() => void copyUrl("/public/order-form", "Full order form link")}
             type="button"
           >

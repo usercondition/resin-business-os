@@ -383,10 +383,9 @@ export default function OrdersPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Manual order management</h1>
+      <h1 className="text-xl font-semibold">All orders</h1>
       <p className="minimal-muted mt-1 text-sm">
-        Create or edit orders with USD pricing, line-item specs, and workflow status. Totals preview below match
-        submit (subtotal + tax − discount).
+        Full order list and history. Use manual order entry below for direct staff-created orders.
       </p>
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
