@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { formatUsd } from "@/lib/format-money";
 
 const PUBLIC_ORDER_PATH = "/public/order-form";
-const HUB_SUCCESS = "/request/order-form-success";
+const HUB_SUCCESS = "/intake/order-form-success";
 const PUBLIC_SUCCESS = "/public/order-form/success";
 
 /** `hub` = signed-in app preview with copy-link tools; `public` = client-facing URL. */

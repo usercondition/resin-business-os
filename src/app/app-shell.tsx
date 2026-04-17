@@ -24,6 +24,8 @@ function matchesClientFacingRoute(pathname: string | null) {
     pathname.startsWith("/public/inquiry/") ||
     pathname === "/public/order-form" ||
     pathname.startsWith("/public/order-form/") ||
+    pathname === "/public/print-request" ||
+    pathname.startsWith("/public/print-request/") ||
     pathname === "/portal" ||
     pathname.startsWith("/portal/")
   );
@@ -65,7 +67,7 @@ const MENU_GROUPS = [
     items: [
       { href: "/orders/active", label: "Active orders", icon: "◉" },
       { href: "/orders", label: "All orders", icon: "▣" },
-      { href: "/request", label: "Client forms", icon: "✎" },
+      { href: "/intake", label: "Intake", icon: "✎" },
       { href: "/messages", label: "Messages", icon: "✉" },
       { href: "/customers", label: "Customers", icon: "◉" },
       { href: "/inventory", label: "Inventory", icon: "▤" },

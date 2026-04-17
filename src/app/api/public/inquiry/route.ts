@@ -11,7 +11,7 @@ import {
   createPublicOrderEditUrl,
 } from "@/server/domain/orders/public-order-workflow-service";
 import { createLead } from "@/server/domain/leads/lead-service";
-import { notifyNewPrintRequest } from "@/server/notifications/request-notifier";
+import { notifyIntakeSubmission } from "@/server/notifications/request-notifier";
 import { appendTimelineEvent } from "@/server/timeline/timeline-service";
 
 const inquirySchema = z
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       context: { abuseScore },
     });
 
-    await notifyNewPrintRequest({
+    await notifyIntakeSubmission({
       customerId: customer.id,
       leadId: lead.id,
       fullName: parsed.fullName,

@@ -7,7 +7,7 @@ import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { getRequestContext } from "@/lib/security/request-context";
 import { createAuditLog } from "@/server/audit/audit-service";
 import { createLead } from "@/server/domain/leads/lead-service";
-import { notifyNewPrintRequest } from "@/server/notifications/request-notifier";
+import { notifyIntakeSubmission } from "@/server/notifications/request-notifier";
 import { appendTimelineEvent } from "@/server/timeline/timeline-service";
 
 const requestItemSchema = z.object({
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       context: { abuseScore },
     });
 
-    await notifyNewPrintRequest({
+    await notifyIntakeSubmission({
       customerId: customer.id,
       leadId: lead.id,
       fullName: parsed.fullName,

@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const PUBLIC_INQUIRY_PATH = "/public/inquiry";
-const HUB_SUCCESS = "/request/inquiry-success";
+const HUB_SUCCESS = "/intake/inquiry-success";
 const PUBLIC_SUCCESS = "/public/inquiry/success";
 
 /** `hub` = app-side preview with copy-link; `public` = shareable client URL. */

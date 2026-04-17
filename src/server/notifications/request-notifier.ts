@@ -40,7 +40,7 @@ function buildStaffNotificationEmail(payload: NotificationPayload): { subject: s
   return { subject, text: lines.join("\n") };
 }
 
-export async function notifyNewPrintRequest(payload: NotificationPayload) {
+export async function notifyIntakeSubmission(payload: NotificationPayload) {
   const event = await emitDomainEvent({
     eventName: "print_request.submitted",
     entityType: "lead",
