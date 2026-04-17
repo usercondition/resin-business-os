@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
               ],
             }
           : undefined,
-        orderBy: { updatedAt: "desc" },
+        orderBy: { fullName: "asc" },
         skip: guarded.pagination.skip,
         take: guarded.pagination.take,
       }),
