@@ -12,12 +12,12 @@ const THEME_KEY = "resin-business-os-theme";
 const SIDEBAR_MODE_KEY = "resin-business-os-sidebar-mode";
 const GROUPS_KEY = "resin-business-os-sidebar-groups";
 
-/** Client-facing routes: no sidebar / ops navigation (shareable links). */
+/** Public client form (shareable URL): no header, sidebar, or staff controls. */
 function isPublicStandalonePath(pathname: string | null) {
   if (!pathname) {
     return false;
   }
-  return pathname === "/request" || pathname.startsWith("/request/");
+  return pathname === "/public/request" || pathname.startsWith("/public/request/");
 }
 
 const MENU_GROUPS = [
