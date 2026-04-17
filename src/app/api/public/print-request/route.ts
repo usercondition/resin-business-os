@@ -146,6 +146,21 @@ export async function POST(request: NextRequest) {
       fullName: parsed.fullName,
       preferredContactChannel: parsed.preferredContactChannel,
       summary: `${parsed.items.length} item(s) requested`,
+      formLabel: "Print request",
+      detailsText: [
+        "Items:",
+        ...parsed.items.map(
+          (item) =>
+            `- ${item.itemType} ×${item.quantity} (material: ${item.material ?? "n/a"}, color: ${item.color ?? "n/a"})`,
+        ),
+        "",
+        `Budget: ${parsed.budget ?? "N/A"}`,
+        `Due: ${parsed.dueDate ? parsed.dueDate.toISOString() : "N/A"}`,
+        `Notes: ${parsed.notes?.trim() ? parsed.notes.trim() : "—"}`,
+        "",
+        `Contact email: ${parsed.email ?? "—"}`,
+        `Contact phone: ${parsed.phone ?? "—"}`,
+      ].join("\n"),
     });
 
     return ok({

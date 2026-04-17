@@ -18,6 +18,14 @@ const envSchema = z.object({
     (v) => (v === "" || v === undefined || v === null ? undefined : v),
     z.string().email().optional(),
   ),
+  /**
+   * Receives Resend alerts when someone submits the public inquiry or print-request form.
+   * If unset, falls back to `APP_OWNER_EMAIL` when Resend is configured.
+   */
+  NEW_REQUEST_NOTIFICATION_EMAIL: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.string().email().optional(),
+  ),
   APP_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.preprocess(
     (v) => (v === "" || v === undefined || v === null ? undefined : v),
@@ -38,7 +46,10 @@ const envSchema = z.object({
   N8N_EMAIL_OUTBOUND_WEBHOOK_URL: optionalUrl,
   /** Resend API key (`re_...`). When set with `RESEND_FROM`, outbound reply/forward/magic-link email is sent via Resend instead of n8n. */
   RESEND_API_KEY: optionalNonEmpty,
-  /** Verified sender, e.g. `Acme <orders@yourdomain.com>`. */
+  /**
+   * Verified sender, e.g. `Acme <orders@yourdomain.com>`.
+   * With `RESEND_API_KEY`, also used for staff email alerts on new public inquiry / print-request submissions when a recipient email is configured.
+   */
   RESEND_FROM: optionalNonEmpty,
   /** Svix signing secret from the Resend webhook used for `/api/webhooks/resend`. */
   RESEND_WEBHOOK_SECRET: optionalNonEmpty,

@@ -6,30 +6,50 @@ import { usePathname } from "next/navigation";
 
 type Props = {
   children: React.ReactNode;
+  /** From server: valid shop session cookie. Used so staff keep header/sidebar on client-facing routes. */
+  hasStaffShopSession?: boolean;
 };
 
 const THEME_KEY = "resin-business-os-theme";
 const SIDEBAR_MODE_KEY = "resin-business-os-sidebar-mode";
 const GROUPS_KEY = "resin-business-os-sidebar-groups";
 
-/** Public client surfaces (shareable URLs): no header or sidebar. */
-function isPublicStandalonePath(pathname: string | null) {
+/** Shareable client URLs (portal + public forms). */
+function matchesClientFacingRoute(pathname: string | null) {
+  if (!pathname) return false;
+  return (
+    pathname === "/public/request" ||
+    pathname.startsWith("/public/request/") ||
+    pathname === "/public/inquiry" ||
+    pathname.startsWith("/public/inquiry/") ||
+    pathname === "/public/order-form" ||
+    pathname.startsWith("/public/order-form/") ||
+    pathname === "/portal" ||
+    pathname.startsWith("/portal/")
+  );
+}
+
+/**
+ * Client-only surfaces (shareable URLs): no header or sidebar when the visitor is not signed in as staff.
+ * When `hasStaffShopSession` is true, portal and /public/* forms keep the normal app chrome for admin preview and support.
+ */
+function isPublicStandalonePath(pathname: string | null, hasStaffShopSession: boolean) {
   if (!pathname) {
     return false;
   }
-  if (pathname === "/public/request" || pathname.startsWith("/public/request/")) {
+  if (pathname === "/login" || pathname.startsWith("/login/")) {
     return true;
   }
-  if (pathname === "/public/inquiry" || pathname.startsWith("/public/inquiry/")) {
-    return true;
+
+  if (!matchesClientFacingRoute(pathname)) {
+    return false;
   }
-  if (pathname === "/public/order-form" || pathname.startsWith("/public/order-form/")) {
-    return true;
+
+  if (hasStaffShopSession) {
+    return false;
   }
-  if (pathname === "/portal" || pathname.startsWith("/portal/")) {
-    return true;
-  }
-  return pathname === "/login" || pathname.startsWith("/login/");
+
+  return true;
 }
 
 const MENU_GROUPS = [
@@ -60,7 +80,7 @@ const MENU_GROUPS = [
   },
 ];
 
-export default function AppShell({ children }: Props) {
+export default function AppShell({ children, hasStaffShopSession = false }: Props) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -156,7 +176,7 @@ export default function AppShell({ children }: Props) {
     setTouchLastX(null);
   }
 
-  if (isPublicStandalonePath(pathname)) {
+  if (isPublicStandalonePath(pathname, hasStaffShopSession)) {
     return (
       <div className="public-standalone min-h-screen bg-[var(--bg)] px-4 py-6 text-[var(--text)]">
         {children}
@@ -260,6 +280,14 @@ export default function AppShell({ children }: Props) {
         onTouchMove={handleTouchMove}
         onTouchStart={handleTouchStart}
       >
+        {hasStaffShopSession && matchesClientFacingRoute(pathname) ? (
+          <p className="staff-client-preview-banner" role="status">
+            <strong>Staff preview.</strong>{" "}
+            <span className="staff-client-preview-banner__muted">
+              Visitors without a shop sign-in see this page without the app header and menu.
+            </span>
+          </p>
+        ) : null}
         {children}
       </div>
     </>

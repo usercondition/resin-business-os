@@ -4,33 +4,34 @@
 
 :root {
   color-scheme: light;
-  --bg: #f5f4ef;
-  --panel: #fffdf9;
-  --border: #e7e2d7;
-  --text: #1b2330;
-  --muted: #697181;
-  --primary: #3f5a8a;
-  --primary-hover: #4f70aa;
-  --primary-text: #f8fafc;
-  --accent: #7a8fb5;
-  --ring: rgba(63, 90, 138, 0.32);
-  --shadow: 0 1px 1px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(15, 23, 42, 0.06);
+  /* Soft neutrals, calm blue — less paper-yellow, easier long-session read */
+  --bg: #f0f2f5;
+  --panel: #fcfcfd;
+  --border: #dfe3ea;
+  --text: #1a1f27;
+  --muted: #5c6677;
+  --primary: #3d5d8c;
+  --primary-hover: #4a6fa3;
+  --primary-text: #f7f9fc;
+  --accent: #6d87ad;
+  --ring: rgba(61, 93, 140, 0.28);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.07);
 }
 
 :root.dark {
   color-scheme: dark;
-  /* Deep graphite base + cool steel accents */
-  --bg: #15181f;
-  --panel: #1d2430;
-  --border: #2a3443;
-  --text: #edf1f7;
-  --muted: #93a0b4;
-  --primary: #8ba4d6;
-  --primary-hover: #a4baea;
-  --primary-text: #0f1624;
-  --accent: #6f87b5;
-  --ring: rgba(139, 164, 214, 0.45);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.42), 0 10px 26px rgba(0, 0, 0, 0.32);
+  /* Lifted charcoal (not pure black), softened text — less glare than pure white on deep navy */
+  --bg: #1b1e25;
+  --panel: #232830;
+  --border: #343b48;
+  --text: #e6e9ef;
+  --muted: #8f9aad;
+  --primary: #6d8ec4;
+  --primary-hover: #86a3d4;
+  --primary-text: #121820;
+  --accent: #5f7aad;
+  --ring: rgba(109, 142, 196, 0.38);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 14px 36px rgba(0, 0, 0, 0.28);
 }
 
 body {
@@ -46,7 +47,9 @@ body {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -269,7 +272,33 @@ a {
 }
 
 :root.dark .app-overlay {
-  background: rgba(8, 10, 12, 0.55);
+  background: rgba(10, 12, 16, 0.5);
+}
+
+/* Staff viewing client-facing routes while signed in */
+.staff-client-preview-banner {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--primary));
+  background: color-mix(in srgb, var(--primary) 10%, var(--panel));
+  color: var(--text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  max-width: 72rem;
+}
+
+.staff-client-preview-banner strong {
+  font-weight: 600;
+}
+
+.staff-client-preview-banner__muted {
+  color: var(--muted);
+}
+
+:root.dark .staff-client-preview-banner {
+  background: color-mix(in srgb, var(--primary) 14%, var(--panel));
+  border-color: color-mix(in srgb, var(--border) 55%, var(--primary));
 }
 
 .minimal-panel {
@@ -299,6 +328,10 @@ a {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--border) 45%, var(--primary));
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 20px rgba(15, 23, 42, 0.1);
+}
+
+:root.dark .minimal-panel-elevated:hover {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .minimal-grid-dynamic > * {

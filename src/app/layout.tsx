@@ -1,4 +1,8 @@
 ﻿import type { Metadata } from "next";
+import { cookies } from "next/headers";
+
+import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
+
 import AppShell from "./app-shell";
 import "./globals.css";
 
@@ -8,6 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const shopCookie = cookies().get(SHOP_SESSION_COOKIE)?.value;
+  const hasStaffShopSession = readShopSessionFromCookie(shopCookie) !== null;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -29,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <AppShell>{children}</AppShell>
+        <AppShell hasStaffShopSession={hasStaffShopSession}>{children}</AppShell>
       </body>
     </html>
   );

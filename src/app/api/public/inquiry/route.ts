@@ -140,6 +140,19 @@ export async function POST(request: NextRequest) {
       fullName: parsed.fullName,
       preferredContactChannel: parsed.preferredContactChannel,
       summary: `Inquiry: ${parsed.subject} (draft order ${draftOrder.orderNumber})`,
+      formLabel: "Public inquiry",
+      detailsText: [
+        `Subject: ${parsed.subject}`,
+        "",
+        parsed.message,
+        "",
+        `Budget: ${parsed.budget ?? "N/A"}`,
+        `Due: ${parsed.dueDate ? parsed.dueDate.toISOString() : "N/A"}`,
+        "",
+        `Contact email: ${parsed.email ?? "—"}`,
+        `Contact phone: ${parsed.phone ?? "—"}`,
+      ].join("\n"),
+      draftOrderId: draftOrder.id,
     });
 
     const { url: editOrderLink } = createPublicOrderEditUrl(draftOrder.id, request.nextUrl.origin);
