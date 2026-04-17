@@ -209,7 +209,7 @@ function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
       className={`minimal-panel minimal-panel-elevated mt-3 ${hasAction ? "border-l-4 border-[var(--primary)]" : ""}`}
     >
       <h2 className="flex items-center gap-2 text-base font-semibold">
-        <IconInbox size={18} className="text-[var(--muted)]" aria-hidden />
+        <IconInbox size={18} className="text-[var(--muted-foreground)]" aria-hidden />
         Next steps
       </h2>
       <p className="minimal-muted mt-1 text-sm">
@@ -238,14 +238,14 @@ function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
                     <Link className="link-terminal underline" href={`/orders/${o.id}`}>
                       {o.orderNumber}
                     </Link>
-                    <span className="text-[var(--muted)]"> · {o.customerName}</span>
+                    <span className="text-[var(--muted-foreground)]"> · {o.customerName}</span>
                   </li>
                 ))}
               </ul>
             ) : null}
           </li>
         ) : (
-          <li className="rounded-md border border-[var(--border)] px-3 py-2 text-[var(--muted)]">
+          <li className="rounded-md border border-[var(--border)] px-3 py-2 text-[var(--muted-foreground)]">
             No inquiry draft orders waiting on a client full-order link.
           </li>
         )}

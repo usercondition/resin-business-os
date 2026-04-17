@@ -91,7 +91,7 @@ export default function PortalOrderPage() {
     <main className="mx-auto max-w-3xl py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 text-[var(--muted)]" aria-hidden>
+          <span className="mt-0.5 text-[var(--muted-foreground)]" aria-hidden>
             <IconPackage size={24} />
           </span>
           <div>
@@ -152,7 +152,7 @@ export default function PortalOrderPage() {
               }`}
               key={m.id}
             >
-              <p className="text-xs text-[var(--muted)]">
+              <p className="text-xs text-[var(--muted-foreground)]">
                 {m.author === "CLIENT" ? "You" : m.staffName ?? "Shop"} · {new Date(m.createdAt).toLocaleString()}
               </p>
               <p className="mt-1 whitespace-pre-wrap">{m.body}</p>

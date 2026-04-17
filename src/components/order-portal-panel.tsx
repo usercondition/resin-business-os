@@ -143,7 +143,7 @@ export function OrderPortalPanel({ orderId, portalUrl }: Props) {
           <ul className="mt-2 max-h-56 space-y-2 overflow-y-auto text-sm">
             {feed.messages.map((m) => (
               <li className="rounded-md border border-[var(--border)] px-2 py-1.5" key={m.id}>
-                <span className="text-xs text-[var(--muted)]">
+                <span className="text-xs text-[var(--muted-foreground)]">
                   {m.author === "STAFF" ? m.staffName ?? "You" : "Customer"} · {new Date(m.createdAt).toLocaleString()}
                 </span>
                 <p className="mt-0.5 whitespace-pre-wrap">{m.body}</p>

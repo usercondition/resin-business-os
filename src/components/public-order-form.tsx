@@ -295,7 +295,7 @@ export function PublicOrderForm({ mode }: Props) {
           <label className="text-sm">
             Tax ($)
             <div className="mt-1 flex items-center rounded-md border border-[var(--border)] bg-[var(--panel)]">
-              <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+              <span className="pl-3 text-sm text-[var(--muted-foreground)]">$</span>
               <input
                 className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none"
                 min={0}
@@ -309,7 +309,7 @@ export function PublicOrderForm({ mode }: Props) {
           <label className="text-sm">
             Discount ($)
             <div className="mt-1 flex items-center rounded-md border border-[var(--border)] bg-[var(--panel)]">
-              <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+              <span className="pl-3 text-sm text-[var(--muted-foreground)]">$</span>
               <input
                 className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none"
                 min={0}
@@ -358,7 +358,7 @@ export function PublicOrderForm({ mode }: Props) {
                 <label className="text-sm">
                   Unit price ($)
                   <div className="mt-1 flex items-center rounded-md border border-[var(--border)] bg-[var(--panel)]">
-                    <span className="pl-2 text-sm text-[var(--muted)]">$</span>
+                    <span className="pl-2 text-sm text-[var(--muted-foreground)]">$</span>
                     <input
                       className="min-w-0 flex-1 border-0 bg-transparent px-2 py-1.5 text-sm outline-none"
                       min={0}
@@ -370,7 +370,7 @@ export function PublicOrderForm({ mode }: Props) {
                     />
                   </div>
                 </label>
-                <p className="text-xs text-[var(--muted)] md:col-span-2">
+                <p className="text-xs text-[var(--muted-foreground)] md:col-span-2">
                   Line total: {formatUsd(line.quantity * line.unitPrice)}
                 </p>
                 <label className="text-sm">

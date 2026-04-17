@@ -65,7 +65,7 @@ export default function CustomerLookupPage() {
       <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
 
       <div className="relative mt-4 max-w-sm">
-        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
           <IconSearch size={16} />
         </span>
         <input

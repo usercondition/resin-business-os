@@ -11,7 +11,7 @@ export default function HomePage() {
     <main className="mx-auto max-w-4xl px-4 py-8">
       <header className="minimal-panel mb-5">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 text-[var(--muted)]" aria-hidden>
+          <span className="mt-0.5 text-[var(--muted-foreground)]" aria-hidden>
             <IconLayers size={28} />
           </span>
           <div>

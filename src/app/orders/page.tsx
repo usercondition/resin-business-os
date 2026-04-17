@@ -507,7 +507,7 @@ export default function OrdersPage() {
                       />
                     </label>
                   </div>
-                  <p className="text-xs text-[var(--muted)]">At least one of email or phone is required for a new customer.</p>
+                  <p className="text-xs text-[var(--muted-foreground)]">At least one of email or phone is required for a new customer.</p>
                   <label className="text-sm">
                     Preferred contact (optional)
                     <input
@@ -592,7 +592,7 @@ export default function OrdersPage() {
             <label className="text-sm">
               Tax ($)
               <div className={moneyInput}>
-                <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+                <span className="pl-3 text-sm text-[var(--muted-foreground)]">$</span>
                 <input
                   className={moneyField}
                   min={0}
@@ -606,7 +606,7 @@ export default function OrdersPage() {
             <label className="text-sm">
               Discount ($)
               <div className={moneyInput}>
-                <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+                <span className="pl-3 text-sm text-[var(--muted-foreground)]">$</span>
                 <input
                   className={moneyField}
                   min={0}
@@ -731,7 +731,7 @@ export default function OrdersPage() {
                     <label className="text-sm">
                       Unit price ($)
                       <div className={moneyInput}>
-                        <span className="pl-2 text-sm text-[var(--muted)]">$</span>
+                        <span className="pl-2 text-sm text-[var(--muted-foreground)]">$</span>
                         <input
                           className={moneyField}
                           min={0}
@@ -745,7 +745,7 @@ export default function OrdersPage() {
                         />
                       </div>
                     </label>
-                    <p className="text-xs text-[var(--muted)] md:col-span-2">
+                    <p className="text-xs text-[var(--muted-foreground)] md:col-span-2">
                       Line total: {formatUsd(item.quantity * item.unitPrice)}
                     </p>
                     <label className="text-sm">

@@ -157,7 +157,7 @@ export function InquiryForm({ mode }: Props) {
           <label className="text-sm">
             Target budget (optional)
             <div className="mt-1 flex items-center rounded-md border border-[var(--border)] bg-[var(--panel)]">
-              <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+              <span className="pl-3 text-sm text-[var(--muted-foreground)]">$</span>
               <input
                 className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none"
                 min={0}

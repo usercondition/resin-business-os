@@ -74,7 +74,7 @@ export default function ActiveOrdersPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Open order containers ({activeOrders.length})</h2>
           <div className="relative w-full max-w-xs">
-            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
               <IconSearch size={16} />
             </span>
             <input

@@ -113,7 +113,7 @@ export default function MessagesPage() {
         <section className="minimal-panel lg:col-span-1">
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
-              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
                 <IconSearch size={16} />
               </span>
               <input

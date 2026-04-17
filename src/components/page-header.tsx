@@ -15,7 +15,7 @@ export function PageHeader({ title, icon: Icon, description, children }: Props) 
     <header className="mb-1">
       <div className="flex items-start gap-2.5">
         {Icon ? (
-          <span className="mt-0.5 shrink-0 text-[var(--muted)]" aria-hidden>
+          <span className="mt-0.5 shrink-0 text-[var(--muted-foreground)]" aria-hidden>
             <Icon size={22} />
           </span>
         ) : null}
