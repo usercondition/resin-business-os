@@ -20,8 +20,23 @@ const postgresDatabaseUrl = z
     "DATABASE_URL must be a PostgreSQL connection string starting with postgresql:// or postgres:// (copy from .env.example and point at your local or hosted Postgres)",
   );
 
+/** Railway/UI often omits the scheme; Zod `.url()` requires `https://` or `http://`. */
+function normalizeAppUrlInput(v: unknown): unknown {
+  if (v === "" || v === undefined || v === null) {
+    return undefined;
+  }
+  const s = String(v).trim();
+  if (!s) {
+    return undefined;
+  }
+  if (/^https?:\/\//i.test(s)) {
+    return s;
+  }
+  return `https://${s}`;
+}
+
 const envSchema = z.object({
-  DATABASE_URL: postgresDatabaseUrl,
+  DATABASE_URL: z.preprocess((v) => (typeof v === "string" ? v.trim() : v), postgresDatabaseUrl),
   /** Sole-operator sign-in: only this email may request a magic link. */
   APP_OWNER_EMAIL: z.preprocess(
     (v) => (v === "" || v === undefined || v === null ? undefined : v),
@@ -37,10 +52,10 @@ const envSchema = z.object({
   ),
   APP_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.preprocess(
-    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    normalizeAppUrlInput,
     z.string().url().default("http://localhost:3000"),
   ),
-  AUTH_SECRET: z.string().min(16),
+  AUTH_SECRET: z.preprocess((v) => (typeof v === "string" ? v.trim() : v), z.string().min(16)),
   GOOGLE_SHEETS_CLIENT_ID: z.string().optional(),
   GOOGLE_SHEETS_CLIENT_SECRET: z.string().optional(),
   N8N_WEBHOOK_SIGNING_SECRET: z.string().optional(),
@@ -105,7 +120,7 @@ function isValidPostgresUrl(value: string | undefined): boolean {
 }
 
 function hasProductionAuthSecret(): boolean {
-  const s = process.env.AUTH_SECRET;
+  const s = process.env.AUTH_SECRET?.trim();
   return typeof s === "string" && s.length >= 16;
 }
 
@@ -139,4 +154,17 @@ function rawProcessEnv(): NodeJS.ProcessEnv {
   };
 }
 
-export const env = envSchema.parse(rawProcessEnv());
+function loadEnv() {
+  const raw = rawProcessEnv();
+  const parsed = envSchema.safeParse(raw);
+  if (!parsed.success) {
+    console.error("[resin-business-os] Invalid environment variables:", parsed.error.flatten());
+    console.error("[resin-business-os] Fix Railway variables: DATABASE_URL, AUTH_SECRET (16+ chars), APP_URL (https://…).");
+    throw new Error(
+      "Environment validation failed. Set DATABASE_URL (postgresql://…), AUTH_SECRET (min 16 characters), and APP_URL (full URL including https://). See server logs above.",
+    );
+  }
+  return parsed.data;
+}
+
+export const env = loadEnv();
