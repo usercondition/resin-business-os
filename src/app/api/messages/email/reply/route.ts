@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/security/auth";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { emitDomainEvent } from "@/server/integrations/events/event-bus-service";
-import { postN8nOutboundEmailWebhook } from "@/server/integrations/n8n/post-outbound-email-webhook";
+import { deliverOutboundEmail } from "@/server/integrations/resend/deliver-outbound-email";
 
 const replySchema = z.object({
   customerId: z.string().cuid(),
@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
       payload,
     });
 
-    const n8n = await postN8nOutboundEmailWebhook({
+    const emailDelivery = await deliverOutboundEmail({
       event: "email.reply_requested",
       payload,
     });
 
-    return ok({ sent: true, messageId: message.id, n8nOutbound: n8n });
+    return ok({ sent: true, messageId: message.id, emailDelivery });
   } catch (error) {
     return handleRouteError(error);
   }

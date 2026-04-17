@@ -5,7 +5,7 @@ import { UserRole } from "@prisma/client";
 import { HttpError } from "@/lib/api";
 import { env } from "@/lib/env";
 import { db } from "@/lib/db";
-import { postN8nOutboundEmailWebhook } from "@/server/integrations/n8n/post-outbound-email-webhook";
+import { deliverOutboundEmail } from "@/server/integrations/resend/deliver-outbound-email";
 
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 
@@ -63,7 +63,7 @@ export async function sendMagicLinkEmail(toEmail: string, signInUrl: string): Pr
   const subject = "Your Resin Business OS sign-in link";
   const text = `Sign in to Resin Business OS (link expires in 15 minutes):\n\n${signInUrl}\n\nIf you did not request this, you can ignore this email.`;
 
-  const result = await postN8nOutboundEmailWebhook({
+  const result = await deliverOutboundEmail({
     event: "app.magic_link_requested",
     payload: {
       to: toEmail,

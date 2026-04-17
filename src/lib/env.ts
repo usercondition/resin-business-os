@@ -6,6 +6,11 @@ const optionalUrl = z.preprocess(
   z.string().url().optional(),
 );
 
+const optionalNonEmpty = z.preprocess(
+  (v) => (v === "" || v === undefined || v === null ? undefined : v),
+  z.string().min(1).optional(),
+);
+
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   /** Sole-operator sign-in: only this email may request a magic link. */
@@ -31,6 +36,12 @@ const envSchema = z.object({
   RESIN_EMAIL_WEBHOOK_SECRET: z.string().optional(),
   /** n8n Webhook URL (production/test) that receives outbound email jobs from this app */
   N8N_EMAIL_OUTBOUND_WEBHOOK_URL: optionalUrl,
+  /** Resend API key (`re_...`). When set with `RESEND_FROM`, outbound reply/forward/magic-link email is sent via Resend instead of n8n. */
+  RESEND_API_KEY: optionalNonEmpty,
+  /** Verified sender, e.g. `Acme <orders@yourdomain.com>`. */
+  RESEND_FROM: optionalNonEmpty,
+  /** Svix signing secret from the Resend webhook used for `/api/webhooks/resend`. */
+  RESEND_WEBHOOK_SECRET: optionalNonEmpty,
   MESSENGER_WEBHOOK_SIGNING_SECRET: z.string().optional(),
   NEW_REQUEST_NOTIFICATION_WEBHOOK_URL: optionalUrl,
   RATE_LIMIT_REDIS_URL: z.string().optional(),
