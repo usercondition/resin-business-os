@@ -35,21 +35,21 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-4">
-      <h1 className="text-xl font-semibold text-slate-900">Customer Detail</h1>
-      <p className="mt-1 text-sm text-slate-600">{message}</p>
+      <h1 className="text-xl font-semibold text-[color:var(--text)]">Customer Detail</h1>
+      <p className="minimal-muted mt-1 text-sm">{message}</p>
 
-      <section className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
-        <h2 className="text-lg font-semibold">{data?.customer.fullName ?? "-"}</h2>
-        <p className="text-sm text-slate-600">{data?.customer.phone ?? "No phone"}</p>
-        <p className="text-sm text-slate-600">{data?.customer.email ?? "No email"}</p>
+      <section className="minimal-panel mt-3">
+        <h2 className="text-lg font-semibold text-[color:var(--text)]">{data?.customer.fullName ?? "-"}</h2>
+        <p className="minimal-muted text-sm">{data?.customer.phone ?? "No phone"}</p>
+        <p className="minimal-muted text-sm">{data?.customer.email ?? "No email"}</p>
       </section>
 
-      <section className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
-        <h3 className="text-base font-semibold">Orders</h3>
-        <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">
+      <section className="minimal-panel mt-3">
+        <h3 className="text-base font-semibold text-[color:var(--text)]">Orders</h3>
+        <ul className="mt-2 list-disc pl-5 text-sm text-[color:var(--text)]">
           {(data?.customer.orders ?? []).map((order) => (
             <li key={order.id}>
-              <a className="underline" href={`/orders/${order.id}`}>
+              <a className="link-terminal underline" href={`/orders/${order.id}`}>
                 {order.orderNumber}
               </a>{" "}
               - {order.status} - balance {String(order.balanceDue)}
@@ -58,9 +58,9 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         </ul>
       </section>
 
-      <section className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
-        <h3 className="text-base font-semibold">Timeline</h3>
-        <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">
+      <section className="minimal-panel mt-3">
+        <h3 className="text-base font-semibold text-[color:var(--text)]">Timeline</h3>
+        <ul className="mt-2 list-disc pl-5 text-sm text-[color:var(--text)]">
           {(data?.timeline ?? []).slice(0, 40).map((event) => (
             <li key={event.id}>
               {event.action} - {new Date(event.createdAt).toLocaleString()}
