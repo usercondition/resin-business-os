@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { OrderPortalPanel } from "@/components/order-portal-panel";
+
+const ACTOR_HEADERS = {
+  "x-user-id": "smoke-admin-1",
+  "x-user-role": "ADMIN",
+};
+
 type OrderDetailResponse = {
   order: {
     id: string;
@@ -25,10 +32,15 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   const [data, setData] = useState<OrderDetailResponse | null>(null);
   const [message, setMessage] = useState("Loading...");
+  const [portalUrl, setPortalUrl] = useState("");
+
+  useEffect(() => {
+    setPortalUrl(`${window.location.origin}/portal`);
+  }, []);
 
   useEffect(() => {
     async function load() {
-      const response = await fetch(`/api/orders/${params.id}`);
+      const response = await fetch(`/api/orders/${params.id}`, { headers: ACTOR_HEADERS });
       const json = await response.json();
       if (json.ok) {
         setData(json.data);
@@ -63,6 +75,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         </p>
         <p className="minimal-muted mt-1 text-sm">Balance due: {String(data?.order.balanceDue ?? 0)}</p>
       </section>
+
+      {portalUrl ? <OrderPortalPanel orderId={params.id} portalUrl={portalUrl} /> : null}
 
       <section className="minimal-panel mt-3">
         <h3 className="text-base font-semibold">Items</h3>

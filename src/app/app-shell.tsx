@@ -12,12 +12,21 @@ const THEME_KEY = "resin-business-os-theme";
 const SIDEBAR_MODE_KEY = "resin-business-os-sidebar-mode";
 const GROUPS_KEY = "resin-business-os-sidebar-groups";
 
-/** Public client form (shareable URL): no header, sidebar, or staff controls. */
+/** Public client surfaces (shareable URLs): no header or sidebar. */
 function isPublicStandalonePath(pathname: string | null) {
   if (!pathname) {
     return false;
   }
-  return pathname === "/public/request" || pathname.startsWith("/public/request/");
+  if (pathname === "/public/request" || pathname.startsWith("/public/request/")) {
+    return true;
+  }
+  if (pathname === "/public/inquiry" || pathname.startsWith("/public/inquiry/")) {
+    return true;
+  }
+  if (pathname === "/public/order-form" || pathname.startsWith("/public/order-form/")) {
+    return true;
+  }
+  return pathname === "/portal" || pathname.startsWith("/portal/");
 }
 
 const MENU_GROUPS = [
@@ -26,13 +35,14 @@ const MENU_GROUPS = [
     items: [
       { href: "/", label: "Home", icon: "⌂" },
       { href: "/dashboard", label: "Dashboard", icon: "◫" },
+      { href: "/portal", label: "Customer portal", icon: "◐" },
     ],
   },
   {
     title: "Operations",
     items: [
       { href: "/ops", label: "Quick Ops", icon: "✦" },
-      { href: "/request", label: "Client Form", icon: "✎" },
+      { href: "/request", label: "Client forms", icon: "✎" },
       { href: "/messages", label: "Messages", icon: "✉" },
       { href: "/orders", label: "Orders", icon: "▣" },
       { href: "/customers", label: "Customers", icon: "◉" },

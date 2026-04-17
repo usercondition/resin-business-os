@@ -1,5 +1,5 @@
-import { RequestSuccessPanel } from "@/components/request-success-panel";
+import { redirect } from "next/navigation";
 
-export default function RequestSuccessPage() {
-  return <RequestSuccessPanel anotherHref="/request" />;
+export default function LegacyRequestSuccessRedirect() {
+  redirect("/request");
 }

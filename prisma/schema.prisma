@@ -75,6 +75,11 @@ enum PaymentMethod {
   ZELLE
 }
 
+enum PortalMessageAuthor {
+  CLIENT
+  STAFF
+}
+
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
@@ -90,6 +95,8 @@ model User {
   createdQuotes     Quote[]   @relation("quoteCreatedBy")
   createdOrders     Order[]   @relation("orderCreatedBy")
   loggedPayments    Payment[] @relation("paymentLoggedBy")
+  portalStaffMessages OrderPortalMessage[] @relation("PortalMessageStaff")
+  portalUploadedPhotos OrderProgressPhoto[] @relation("PortalPhotoUploader")
 }
 
 model Customer {
@@ -209,6 +216,37 @@ model Order {
   productionJobs ProductionJob[]
   payments       Payment[]
   deliveries     Delivery[]
+  portalMessages OrderPortalMessage[]
+  progressPhotos OrderProgressPhoto[]
+}
+
+model OrderPortalMessage {
+  id          String               @id @default(cuid())
+  orderId     String
+  order       Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  body        String
+  author      PortalMessageAuthor
+  staffUserId String?
+  staffUser   User?                @relation("PortalMessageStaff", fields: [staffUserId], references: [id])
+  createdAt   DateTime             @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model OrderProgressPhoto {
+  id               String   @id @default(cuid())
+  orderId          String
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  caption          String?
+  mimeType         String
+  /// Base64 image (MVP); migrate to object storage for scale.
+  imageBase64      String   @db.Text
+  uploadedByUserId String?
+  uploadedBy       User?    @relation("PortalPhotoUploader", fields: [uploadedByUserId], references: [id])
+  visibleToClient  Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  @@index([orderId, createdAt])
 }
 
 model OrderItem {

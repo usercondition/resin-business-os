@@ -1,5 +1,5 @@
-import { PrintRequestForm } from "@/components/print-request-form";
+import { ClientFormsHub } from "@/app/request/client-forms-hub";
 
-export default function ClientPrintRequestPage() {
-  return <PrintRequestForm mode="staff" />;
+export default function ClientFormsPage() {
+  return <ClientFormsHub />;
 }

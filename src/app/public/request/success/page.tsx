@@ -1,5 +1,5 @@
-import { RequestSuccessPanel } from "@/components/request-success-panel";
+import { redirect } from "next/navigation";
 
-export default function PublicPrintRequestSuccessPage() {
-  return <RequestSuccessPanel anotherHref="/public/request" />;
+export default function LegacyPublicRequestSuccessRedirect() {
+  redirect("/public/inquiry/success");
 }

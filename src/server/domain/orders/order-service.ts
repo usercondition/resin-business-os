@@ -30,6 +30,10 @@ const createOrderSchema = z
     tax: z.number().nonnegative().default(0),
     discount: z.number().nonnegative().default(0),
     items: z.array(orderItemSchema).min(1),
+    status: z.nativeEnum(OrderStatus).optional(),
+    productionStatus: z.nativeEnum(ProductionStatus).optional(),
+    paymentStatus: z.nativeEnum(PaymentStatus).optional(),
+    deliveryStatus: z.nativeEnum(DeliveryStatus).optional().nullable(),
   })
   .superRefine((val, ctx) => {
     const hasId = Boolean(val.customerId);
@@ -98,8 +102,10 @@ export async function createOrder(
       leadId: parsed.leadId,
       quoteId: parsed.quoteId,
       orderNumber: `ORD-${new Date().getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`,
-      status: OrderStatus.NEW,
-      productionStatus: ProductionStatus.QUEUED,
+      status: parsed.status ?? OrderStatus.NEW,
+      productionStatus: parsed.productionStatus ?? ProductionStatus.QUEUED,
+      paymentStatus: parsed.paymentStatus ?? PaymentStatus.PENDING,
+      deliveryStatus: parsed.deliveryStatus ?? undefined,
       dueDate: parsed.dueDate,
       subtotal,
       tax: parsed.tax,

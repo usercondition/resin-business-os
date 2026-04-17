@@ -1,5 +1,5 @@
-import { PrintRequestForm } from "@/components/print-request-form";
+import { redirect } from "next/navigation";
 
-export default function PublicPrintRequestPage() {
-  return <PrintRequestForm mode="public" />;
+export default function LegacyPublicRequestRedirect() {
+  redirect("/public/inquiry");
 }

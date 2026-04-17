@@ -1,6 +1,9 @@
 ﻿"use client";
 
+import { DeliveryStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@prisma/client";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+
+import { formatUsd } from "@/lib/format-money";
 
 type Customer = {
   id: string;
@@ -12,6 +15,9 @@ type OrderRow = {
   orderNumber: string;
   customerId: string;
   status: string;
+  productionStatus: string;
+  paymentStatus: string;
+  deliveryStatus?: string | null;
   total: string;
   balanceDue: string;
   dueDate?: string | null;
@@ -26,6 +32,7 @@ type OrderRow = {
     unitPrice: string;
     materialType?: string | null;
     color?: string | null;
+    printSpecJson?: unknown;
   }>;
 };
 
@@ -35,6 +42,7 @@ type ItemInput = {
   unitPrice: number;
   materialType?: string;
   color?: string;
+  printSpecNotes: string;
 };
 
 type OrderForm = {
@@ -45,6 +53,10 @@ type OrderForm = {
   notes: string;
   tax: number;
   discount: number;
+  status: OrderStatus;
+  productionStatus: ProductionStatus;
+  paymentStatus: PaymentStatus;
+  deliveryStatus: DeliveryStatus | "";
   items: ItemInput[];
 };
 
@@ -52,6 +64,8 @@ type NewCustomerFields = {
   fullName: string;
   phone: string;
   email: string;
+  preferredContactChannel: string;
+  defaultAddress: string;
   notes: string;
 };
 
@@ -60,6 +74,14 @@ const ACTOR_HEADERS = {
   "x-user-id": "smoke-admin-1",
   "x-user-role": "ADMIN",
 };
+
+function specNotesFromJson(json: unknown): string {
+  if (!json || typeof json !== "object") {
+    return "";
+  }
+  const n = (json as { notes?: unknown }).notes;
+  return typeof n === "string" ? n : "";
+}
 
 function emptyForm(): OrderForm {
   return {
@@ -70,12 +92,16 @@ function emptyForm(): OrderForm {
     notes: "",
     tax: 0,
     discount: 0,
-    items: [{ itemName: "", quantity: 1, unitPrice: 0, materialType: "", color: "" }],
+    status: OrderStatus.NEW,
+    productionStatus: ProductionStatus.QUEUED,
+    paymentStatus: PaymentStatus.PENDING,
+    deliveryStatus: "",
+    items: [{ itemName: "", quantity: 1, unitPrice: 0, materialType: "", color: "", printSpecNotes: "" }],
   };
 }
 
 function emptyNewCustomer(): NewCustomerFields {
-  return { fullName: "", phone: "", email: "", notes: "" };
+  return { fullName: "", phone: "", email: "", preferredContactChannel: "", defaultAddress: "", notes: "" };
 }
 
 export default function OrdersPage() {
@@ -85,6 +111,7 @@ export default function OrdersPage() {
   const [customerEntryMode, setCustomerEntryMode] = useState<"existing" | "new">("existing");
   const [newCustomer, setNewCustomer] = useState<NewCustomerFields>(emptyNewCustomer());
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [showManualForm, setShowManualForm] = useState(false);
   const [message, setMessage] = useState("Ready");
   const [loading, setLoading] = useState(false);
 
@@ -92,6 +119,12 @@ export default function OrdersPage() {
     () => orders.find((order) => order.id === editingOrderId) ?? null,
     [orders, editingOrderId],
   );
+
+  const subtotal = useMemo(
+    () => form.items.reduce((s, i) => s + i.quantity * (Number.isFinite(i.unitPrice) ? i.unitPrice : 0), 0),
+    [form.items],
+  );
+  const computedTotal = subtotal + form.tax - form.discount;
 
   useEffect(() => {
     void refreshData();
@@ -123,7 +156,10 @@ export default function OrdersPage() {
   function addItem() {
     setForm((prev) => ({
       ...prev,
-      items: [...prev.items, { itemName: "", quantity: 1, unitPrice: 0, materialType: "", color: "" }],
+      items: [
+        ...prev.items,
+        { itemName: "", quantity: 1, unitPrice: 0, materialType: "", color: "", printSpecNotes: "" },
+      ],
     }));
   }
 
@@ -134,18 +170,39 @@ export default function OrdersPage() {
     }));
   }
 
+  function buildItemsPayload() {
+    return form.items.map((item) => ({
+      itemName: item.itemName,
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.unitPrice),
+      materialType: item.materialType || undefined,
+      color: item.color || undefined,
+      ...(item.printSpecNotes.trim()
+        ? { printSpec: { notes: item.printSpecNotes.trim() } as Record<string, unknown> }
+        : {}),
+    }));
+  }
+
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
+    if (customerEntryMode === "existing" && !form.customerId) {
+      setMessage("Select an existing customer before creating the order.");
+      return;
+    }
+    if (customerEntryMode === "new" && !newCustomer.email.trim() && !newCustomer.phone.trim()) {
+      setMessage("New customer: enter an email or phone number.");
+      return;
+    }
     setLoading(true);
     setMessage("Creating order...");
     try {
-      const itemsPayload = form.items.map((item) => ({
-        itemName: item.itemName,
-        quantity: Number(item.quantity),
-        unitPrice: Number(item.unitPrice),
-        materialType: item.materialType || undefined,
-        color: item.color || undefined,
-      }));
+      const itemsPayload = buildItemsPayload();
+      const statusPayload = {
+        status: form.status,
+        productionStatus: form.productionStatus,
+        paymentStatus: form.paymentStatus,
+        ...(form.deliveryStatus ? { deliveryStatus: form.deliveryStatus as DeliveryStatus } : {}),
+      };
 
       const payload =
         customerEntryMode === "new"
@@ -154,6 +211,8 @@ export default function OrdersPage() {
                 fullName: newCustomer.fullName.trim(),
                 phone: newCustomer.phone.trim() || undefined,
                 email: newCustomer.email.trim() || undefined,
+                preferredContactChannel: newCustomer.preferredContactChannel.trim() || undefined,
+                defaultAddress: newCustomer.defaultAddress.trim() || undefined,
                 notes: newCustomer.notes.trim() || undefined,
               },
               leadId: form.leadId || undefined,
@@ -163,6 +222,7 @@ export default function OrdersPage() {
               tax: Number(form.tax),
               discount: Number(form.discount),
               items: itemsPayload,
+              ...statusPayload,
             }
           : {
               customerId: form.customerId,
@@ -173,6 +233,7 @@ export default function OrdersPage() {
               tax: Number(form.tax),
               discount: Number(form.discount),
               items: itemsPayload,
+              ...statusPayload,
             };
 
       const response = await fetch("/api/orders", {
@@ -218,7 +279,24 @@ export default function OrdersPage() {
     }
   }
 
+  async function copyClientEditOrderLink(orderId: string) {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/public-order-link`, {
+        headers: ACTOR_HEADERS,
+      });
+      const json = await response.json();
+      if (!json.ok) {
+        throw new Error(json.error?.message ?? "Could not generate client order link");
+      }
+      await navigator.clipboard.writeText(String(json.data.url));
+      setMessage("Client editable order link copied.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not generate client order link");
+    }
+  }
+
   function startEdit(order: OrderRow) {
+    setShowManualForm(true);
     setEditingOrderId(order.id);
     setForm({
       customerId: order.customerId,
@@ -228,12 +306,17 @@ export default function OrdersPage() {
       notes: order.notes ?? "",
       tax: Number(order.tax),
       discount: Number(order.discount),
+      status: order.status as OrderStatus,
+      productionStatus: order.productionStatus as ProductionStatus,
+      paymentStatus: order.paymentStatus as PaymentStatus,
+      deliveryStatus: (order.deliveryStatus as DeliveryStatus) || "",
       items: order.items.map((item) => ({
         itemName: item.itemName,
         quantity: item.quantity,
         unitPrice: Number(item.unitPrice),
         materialType: item.materialType ?? "",
         color: item.color ?? "",
+        printSpecNotes: specNotesFromJson(item.printSpecJson),
       })),
     });
     setMessage(`Editing ${order.orderNumber}`);
@@ -253,13 +336,11 @@ export default function OrdersPage() {
         notes: form.notes || undefined,
         tax: Number(form.tax),
         discount: Number(form.discount),
-        items: form.items.map((item) => ({
-          itemName: item.itemName,
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.unitPrice),
-          materialType: item.materialType || undefined,
-          color: item.color || undefined,
-        })),
+        status: form.status,
+        productionStatus: form.productionStatus,
+        paymentStatus: form.paymentStatus,
+        deliveryStatus: form.deliveryStatus ? (form.deliveryStatus as DeliveryStatus) : null,
+        items: buildItemsPayload(),
       };
 
       const response = await fetch(`/api/orders/${editingOrderId}`, {
@@ -288,21 +369,57 @@ export default function OrdersPage() {
     setMessage("Edit cancelled");
   }
 
+  const moneyInput =
+    "mt-1 flex items-center rounded-md border border-[var(--border)] bg-[var(--panel)] focus-within:ring-2 focus-within:ring-[var(--ring)]";
+  const moneyField = "min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none";
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Manual Order Management</h1>
+      <h1 className="text-xl font-semibold">Manual order management</h1>
       <p className="minimal-muted mt-1 text-sm">
-        Create, edit, and delete orders with item-level inputs and totals.
+        Create or edit orders with USD pricing, line-item specs, and workflow status. Totals preview below match
+        submit (subtotal + tax − discount).
       </p>
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
       <section className="minimal-panel mt-4">
-        <h2 className="text-base font-semibold">
-          {editingOrderId ? "Edit Order" : "Create Order"}
-        </h2>
-        <form className="mt-3 grid gap-2" onSubmit={editingOrderId ? handleSaveEdit : handleCreate}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-semibold">{editingOrderId ? "Edit order" : "Manual order entry"}</h2>
+          {!showManualForm ? (
+            <button className="minimal-cta" onClick={() => setShowManualForm(true)} type="button">
+              New manual order
+            </button>
+          ) : (
+            <button
+              className="app-button"
+              onClick={() => {
+                if (!editingOrderId) {
+                  setShowManualForm(false);
+                }
+              }}
+              type="button"
+            >
+              Collapse form
+            </button>
+          )}
+        </div>
+
+        {showManualForm ? (
+          <>
+            <div className="minimal-muted mt-3 grid gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-3 text-sm">
+              <p>
+                <span className="font-medium text-[var(--text)]">Subtotal:</span> {formatUsd(subtotal)}
+              </p>
+              <p>
+                <span className="font-medium text-[var(--text)]">Tax:</span> {formatUsd(form.tax)} ·{" "}
+                <span className="font-medium text-[var(--text)]">Discount:</span> {formatUsd(form.discount)}
+              </p>
+              <p className="text-base font-semibold text-[var(--primary)]">Order total: {formatUsd(computedTotal)}</p>
+            </div>
+
+            <form className="mt-4 grid gap-4" onSubmit={editingOrderId ? handleSaveEdit : handleCreate}>
           {!editingOrderId ? (
-            <div className="grid gap-2">
+            <div className="grid gap-3">
               <p className="text-sm font-semibold">Customer</p>
               <div className="flex flex-wrap gap-3 text-sm">
                 <label className="inline-flex items-center gap-2">
@@ -321,7 +438,7 @@ export default function OrdersPage() {
                     type="radio"
                     onChange={() => setCustomerEntryMode("new")}
                   />
-                  Enter new customer
+                  New customer
                 </label>
               </div>
               {customerEntryMode === "existing" ? (
@@ -336,7 +453,7 @@ export default function OrdersPage() {
                     <option value="">Select customer</option>
                     {customers.map((customer) => (
                       <option key={customer.id} value={customer.id}>
-                        {customer.fullName} ({customer.id})
+                        {customer.fullName}
                       </option>
                     ))}
                   </select>
@@ -356,17 +473,7 @@ export default function OrdersPage() {
                   </label>
                   <div className="grid gap-2 md:grid-cols-2">
                     <label className="text-sm">
-                      Phone (optional)
-                      <input
-                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                        value={newCustomer.phone}
-                        onChange={(event) =>
-                          setNewCustomer((prev) => ({ ...prev, phone: event.target.value }))
-                        }
-                      />
-                    </label>
-                    <label className="text-sm">
-                      Email (optional)
+                      Email
                       <input
                         className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
                         type="email"
@@ -376,12 +483,42 @@ export default function OrdersPage() {
                         }
                       />
                     </label>
+                    <label className="text-sm">
+                      Phone
+                      <input
+                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                        value={newCustomer.phone}
+                        onChange={(event) =>
+                          setNewCustomer((prev) => ({ ...prev, phone: event.target.value }))
+                        }
+                      />
+                    </label>
                   </div>
+                  <p className="text-xs text-[var(--muted)]">At least one of email or phone is required for a new customer.</p>
+                  <label className="text-sm">
+                    Preferred contact (optional)
+                    <input
+                      className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={newCustomer.preferredContactChannel}
+                      onChange={(event) =>
+                        setNewCustomer((prev) => ({ ...prev, preferredContactChannel: event.target.value }))
+                      }
+                    />
+                  </label>
+                  <label className="text-sm">
+                    Default / shipping address (optional)
+                    <textarea
+                      className="mt-1 min-h-16 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                      value={newCustomer.defaultAddress}
+                      onChange={(event) =>
+                        setNewCustomer((prev) => ({ ...prev, defaultAddress: event.target.value }))
+                      }
+                    />
+                  </label>
                   <label className="text-sm">
                     Customer notes (optional)
                     <textarea
-                      className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                      rows={2}
+                      className="mt-1 min-h-16 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
                       value={newCustomer.notes}
                       onChange={(event) =>
                         setNewCustomer((prev) => ({ ...prev, notes: event.target.value }))
@@ -403,14 +540,14 @@ export default function OrdersPage() {
                 <option value="">Select customer</option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
-                    {customer.fullName} ({customer.id})
+                    {customer.fullName}
                   </option>
                 ))}
               </select>
             </label>
           )}
 
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <label className="text-sm">
               Lead ID (optional)
               <input
@@ -429,7 +566,7 @@ export default function OrdersPage() {
             </label>
           </div>
 
-          <div className="grid gap-2 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <label className="text-sm">
               Due date
               <input
@@ -440,33 +577,108 @@ export default function OrdersPage() {
               />
             </label>
             <label className="text-sm">
-              Tax
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                value={form.tax}
-                onChange={(event) => setForm((prev) => ({ ...prev, tax: Number(event.target.value) }))}
-              />
+              Tax ($)
+              <div className={moneyInput}>
+                <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+                <input
+                  className={moneyField}
+                  min={0}
+                  step="0.01"
+                  type="number"
+                  value={form.tax}
+                  onChange={(event) => setForm((prev) => ({ ...prev, tax: Number(event.target.value) }))}
+                />
+              </div>
             </label>
             <label className="text-sm">
-              Discount
-              <input
-                type="number"
-                min={0}
-                step="0.01"
+              Discount ($)
+              <div className={moneyInput}>
+                <span className="pl-3 text-sm text-[var(--muted)]">$</span>
+                <input
+                  className={moneyField}
+                  min={0}
+                  step="0.01"
+                  type="number"
+                  value={form.discount}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, discount: Number(event.target.value) }))
+                  }
+                />
+              </div>
+            </label>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <label className="text-sm">
+              Order status
+              <select
                 className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                value={form.discount}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, discount: Number(event.target.value) }))
+                value={form.status}
+                onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as OrderStatus }))}
+              >
+                {Object.values(OrderStatus).map((v) => (
+                  <option key={v} value={v}>
+                    {String(v).replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Production
+              <select
+                className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                value={form.productionStatus}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, productionStatus: e.target.value as ProductionStatus }))
                 }
-              />
+              >
+                {Object.values(ProductionStatus).map((v) => (
+                  <option key={v} value={v}>
+                    {String(v).replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Payment
+              <select
+                className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                value={form.paymentStatus}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, paymentStatus: e.target.value as PaymentStatus }))
+                }
+              >
+                {Object.values(PaymentStatus).map((v) => (
+                  <option key={v} value={v}>
+                    {String(v).replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Delivery (optional)
+              <select
+                className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                value={form.deliveryStatus}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    deliveryStatus: (e.target.value || "") as OrderForm["deliveryStatus"],
+                  }))
+                }
+              >
+                <option value="">—</option>
+                {Object.values(DeliveryStatus).map((v) => (
+                  <option key={v} value={v}>
+                    {String(v).replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
 
           <label className="text-sm">
-            Notes
+            Order notes
             <textarea
               className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
               rows={3}
@@ -475,87 +687,118 @@ export default function OrdersPage() {
             />
           </label>
 
-          <div className="mt-2">
-            <h3 className="text-sm font-semibold">Order Items</h3>
-            <div className="mt-2 grid gap-2">
+          <div>
+            <h3 className="text-sm font-semibold">Line items</h3>
+            <div className="mt-2 grid gap-3">
               {form.items.map((item, index) => (
-                <article className="rounded-md border border-[var(--border)] p-2" key={index}>
-                  <div className="grid gap-2 md:grid-cols-5">
-                    <input
-                      className="rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                      placeholder="Item name"
-                      required
-                      value={item.itemName}
-                      onChange={(event) => updateItem(index, { itemName: event.target.value })}
-                    />
-                    <input
-                      type="number"
-                      min={1}
-                      className="rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                      placeholder="Qty"
-                      required
-                      value={item.quantity}
-                      onChange={(event) =>
-                        updateItem(index, { quantity: Number(event.target.value) })
-                      }
-                    />
-                    <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      className="rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                      placeholder="Unit price"
-                      required
-                      value={item.unitPrice}
-                      onChange={(event) =>
-                        updateItem(index, { unitPrice: Number(event.target.value) })
-                      }
-                    />
-                    <input
-                      className="rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                      placeholder="Material"
-                      value={item.materialType}
-                      onChange={(event) => updateItem(index, { materialType: event.target.value })}
-                    />
-                    <input
-                      className="rounded-md border border-[var(--border)] bg-transparent px-2 py-1 text-sm"
-                      placeholder="Color"
-                      value={item.color}
-                      onChange={(event) => updateItem(index, { color: event.target.value })}
-                    />
+                <article className="rounded-md border border-[var(--border)] p-3" key={index}>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <label className="text-sm md:col-span-2">
+                      Item / service name
+                      <input
+                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1.5 text-sm"
+                        required
+                        value={item.itemName}
+                        onChange={(event) => updateItem(index, { itemName: event.target.value })}
+                      />
+                    </label>
+                    <label className="text-sm">
+                      Quantity
+                      <input
+                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1.5 text-sm"
+                        min={1}
+                        required
+                        type="number"
+                        value={item.quantity}
+                        onChange={(event) =>
+                          updateItem(index, { quantity: Number(event.target.value) })
+                        }
+                      />
+                    </label>
+                    <label className="text-sm">
+                      Unit price ($)
+                      <div className={moneyInput}>
+                        <span className="pl-2 text-sm text-[var(--muted)]">$</span>
+                        <input
+                          className={moneyField}
+                          min={0}
+                          required
+                          step="0.01"
+                          type="number"
+                          value={item.unitPrice}
+                          onChange={(event) =>
+                            updateItem(index, { unitPrice: Number(event.target.value) })
+                          }
+                        />
+                      </div>
+                    </label>
+                    <p className="text-xs text-[var(--muted)] md:col-span-2">
+                      Line total: {formatUsd(item.quantity * item.unitPrice)}
+                    </p>
+                    <label className="text-sm">
+                      Material
+                      <input
+                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1.5 text-sm"
+                        value={item.materialType}
+                        onChange={(event) => updateItem(index, { materialType: event.target.value })}
+                      />
+                    </label>
+                    <label className="text-sm">
+                      Color
+                      <input
+                        className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1.5 text-sm"
+                        value={item.color}
+                        onChange={(event) => updateItem(index, { color: event.target.value })}
+                      />
+                    </label>
+                    <label className="text-sm md:col-span-2">
+                      Print / build notes (optional)
+                      <textarea
+                        className="mt-1 min-h-16 w-full rounded-md border border-[var(--border)] bg-transparent px-2 py-1.5 text-sm"
+                        placeholder="Specs stored on the line item"
+                        value={item.printSpecNotes}
+                        onChange={(event) => updateItem(index, { printSpecNotes: event.target.value })}
+                      />
+                    </label>
                   </div>
                   {form.items.length > 1 ? (
                     <button
-                      className="mt-2 rounded-md border border-[var(--border)] px-2 py-1 text-xs"
+                      className="app-button mt-2 text-xs"
                       onClick={() => removeItem(index)}
                       type="button"
                     >
-                      Remove Item
+                      Remove line
                     </button>
                   ) : null}
                 </article>
               ))}
             </div>
             <button className="app-button mt-2" onClick={addItem} type="button">
-              Add Item
+              Add line item
             </button>
           </div>
 
-          <div className="mt-2 flex gap-2">
-            <button className="minimal-cta" disabled={loading} type="submit">
-              {editingOrderId ? "Save Order" : "Create Order"}
-            </button>
-            {editingOrderId ? (
-              <button className="app-button" onClick={cancelEdit} type="button">
-                Cancel Edit
-              </button>
-            ) : null}
-          </div>
-        </form>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button className="minimal-cta" disabled={loading} type="submit">
+                  {editingOrderId ? "Save order" : "Create order"}
+                </button>
+                {editingOrderId ? (
+                  <button className="app-button" onClick={cancelEdit} type="button">
+                    Cancel edit
+                  </button>
+                ) : null}
+              </div>
+            </form>
+          </>
+        ) : (
+          <p className="minimal-muted mt-3 text-sm">
+            The manual entry form is collapsed. Use <strong>New manual order</strong> when you need to create one.
+          </p>
+        )}
       </section>
 
       <section className="minimal-panel mt-4">
-        <h2 className="text-base font-semibold">Existing Orders</h2>
+        <h2 className="text-base font-semibold">Existing orders</h2>
         <div className="mt-2 grid gap-2">
           {orders.map((order) => (
             <article className="rounded-md border border-[var(--border)] p-3" key={order.id}>
@@ -563,21 +806,24 @@ export default function OrdersPage() {
                 <div>
                   <p className="text-sm font-semibold">{order.orderNumber}</p>
                   <p className="minimal-muted text-xs">
-                    {order.id} | status {order.status} | total {order.total} | balance {order.balanceDue}
+                    {order.status} · production {order.productionStatus} · payment {order.paymentStatus}
+                    {order.deliveryStatus ? ` · delivery ${order.deliveryStatus}` : ""}
+                  </p>
+                  <p className="minimal-muted text-xs">
+                    Total {formatUsd(Number(order.total))} · Balance {formatUsd(Number(order.balanceDue))}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <a className="app-button" href={`/orders/${order.id}`}>
                     View
                   </a>
+                  <button className="app-button" onClick={() => void copyClientEditOrderLink(order.id)} type="button">
+                    Copy client edit link
+                  </button>
                   <button className="app-button" onClick={() => startEdit(order)} type="button">
                     Edit
                   </button>
-                  <button
-                    className="app-button"
-                    onClick={() => handleDelete(order.id)}
-                    type="button"
-                  >
+                  <button className="app-button" onClick={() => handleDelete(order.id)} type="button">
                     Delete
                   </button>
                 </div>

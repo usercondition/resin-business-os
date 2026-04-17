@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Print request",
-  description: "Request a custom print — we will follow up with a quote.",
+  title: "Inquiry (redirect)",
+  description: "This URL forwards to the inquiry form.",
 };
 
 export default function PublicRequestLayout({ children }: { children: React.ReactNode }) {
