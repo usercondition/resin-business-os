@@ -71,20 +71,54 @@ const envSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
+/** Valid Prisma URL for `next build` / Docker when no real DB is wired at compile time. */
+const BUILD_PLACEHOLDER_DATABASE_URL = "postgresql://build:build@127.0.0.1:5432/build?schema=public";
+
 /**
- * During `npm run build`, Next may load server modules that import `env` before Railway injects
- * variables into the build phase. Supply placeholders only for missing required keys in that case.
+ * True while Next is compiling (`next build`). Docker/CI workers sometimes omit
+ * `npm_lifecycle_event`; Next sets `NEXT_PHASE` (use bracket access so it is not inlined to undefined).
+ *
+ * Optional: set `RESIN_OS_COMPILE_STAGE=1` only in your **Dockerfile build stage** (not runtime) if the
+ * image still fails to detect compile phase.
+ */
+function isCompilerBuildPhase(): boolean {
+  if (process.env.RESIN_OS_COMPILE_STAGE === "1") {
+    return true;
+  }
+  if (process.env.npm_lifecycle_event === "build") {
+    return true;
+  }
+  const lifecycleScript = process.env.npm_lifecycle_script ?? "";
+  if (lifecycleScript.includes("next build")) {
+    return true;
+  }
+  const phase = process.env["NEXT_PHASE"];
+  return phase === "phase-production-build" || phase === "phase-development-build";
+}
+
+function isValidPostgresUrl(value: string | undefined): boolean {
+  if (!value?.trim()) {
+    return false;
+  }
+  const v = value.trim();
+  return v.startsWith("postgresql://") || v.startsWith("postgres://");
+}
+
+/**
+ * During `npm run build` / Docker build, Next loads server modules that import `env` before
+ * runtime env (e.g. Railway `DATABASE_URL`) exists. Use placeholders only in that compile phase.
  */
 function rawProcessEnv(): NodeJS.ProcessEnv {
-  const isNpmBuild = process.env.npm_lifecycle_event === "build";
-  if (!isNpmBuild) {
+  if (!isCompilerBuildPhase()) {
     return process.env;
   }
+
+  const dbFromEnv = process.env.DATABASE_URL;
+  const databaseUrl = isValidPostgresUrl(dbFromEnv) ? dbFromEnv!.trim() : BUILD_PLACEHOLDER_DATABASE_URL;
+
   return {
     ...process.env,
-    DATABASE_URL:
-      process.env.DATABASE_URL ||
-      "postgresql://build:build@127.0.0.1:5432/build?schema=public",
+    DATABASE_URL: databaseUrl,
     AUTH_SECRET: process.env.AUTH_SECRET || "00000000000000000000000000000000",
   };
 }
