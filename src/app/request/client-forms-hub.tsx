@@ -54,7 +54,7 @@ export function ClientFormsHub() {
         <ol className="minimal-muted mt-2 list-decimal space-y-1 pl-5 text-sm">
           <li>Send inquiry link first.</li>
           <li>After inquiry arrives, open the draft order in Orders.</li>
-          <li>Use "Copy client edit link" on that order to send the prefilled full-order form.</li>
+          <li>Use &quot;Copy client edit link&quot; on that order to send the prefilled full-order form.</li>
           <li>Client edits quantities/items and submits; the same order updates.</li>
         </ol>
       </section>
