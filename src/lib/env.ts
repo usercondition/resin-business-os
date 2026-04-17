@@ -11,8 +11,17 @@ const optionalNonEmpty = z.preprocess(
   z.string().min(1).optional(),
 );
 
+/** Prisma requires `postgresql://` or `postgres://` — not SQLite, not a host-only string. */
+const postgresDatabaseUrl = z
+  .string()
+  .min(1, "DATABASE_URL is required")
+  .refine(
+    (v) => v.startsWith("postgresql://") || v.startsWith("postgres://"),
+    "DATABASE_URL must be a PostgreSQL connection string starting with postgresql:// or postgres:// (copy from .env.example and point at your local or hosted Postgres)",
+  );
+
 const envSchema = z.object({
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: postgresDatabaseUrl,
   /** Sole-operator sign-in: only this email may request a magic link. */
   APP_OWNER_EMAIL: z.preprocess(
     (v) => (v === "" || v === undefined || v === null ? undefined : v),
