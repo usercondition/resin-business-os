@@ -8,7 +8,14 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        terminal: ["var(--font-terminal)", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace"],
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
       },
     },
   },

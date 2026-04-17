@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import { readShopSessionFromCookie, SHOP_SESSION_COOKIE } from "@/server/auth/shop-session";
 
@@ -10,9 +10,8 @@ import "./globals.css";
 /** Ensure cookie/session reads always run in a request context (avoids static prerender edge cases). */
 export const dynamic = "force-dynamic";
 
-const terminalFont = JetBrains_Mono({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-terminal",
   display: "swap",
 });
 
@@ -26,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const hasStaffShopSession = readShopSessionFromCookie(shopCookie) !== null;
 
   return (
-    <html className={terminalFont.variable} lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body>
+      <body className={inter.className}>
         <AppShell hasStaffShopSession={hasStaffShopSession}>{children}</AppShell>
       </body>
     </html>
