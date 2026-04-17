@@ -29,6 +29,8 @@ Staff configure links from **Intake** (`/intake`) in the app.
 3. From the **draft order** on that inquiry, use **Copy client edit link** → client completes **full order form** on the same order.
 4. Run the job through **Orders** → production/delivery; **Portal** for low-friction client status + notes.
 
+**In the app:** the **Dashboard → Next steps** strip surfaces inquiry drafts and due follow-ups; each **order** page has an **Intake & client forms** strip with a one-click **copy client full-order link** and a link back to **Intake**.
+
 ## What this app is not
 
 - Not a generic marketing CRM (no campaigns, ads, or call lists).

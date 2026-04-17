@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { OrderIntakeStrip } from "@/components/order-intake-strip";
 import { OrderPortalPanel } from "@/components/order-portal-panel";
 
 const shopFetch: RequestInit = { credentials: "include" };
@@ -64,6 +65,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       <h1 className="text-xl font-semibold">Order</h1>
       <p className="minimal-muted mt-1 text-sm">Complete order context: workflow state, client updates, and timeline.</p>
       <p className="minimal-muted mt-1 text-sm">{message}</p>
+
+      {data?.order ? (
+        <OrderIntakeStrip orderId={data.order.id} orderNumber={data.order.orderNumber} status={data.order.status} />
+      ) : null}
 
       <section className="minimal-panel mt-3">
         <h2 className="text-lg font-semibold">{data?.order.orderNumber ?? "-"}</h2>

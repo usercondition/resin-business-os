@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Metrics = {
@@ -13,6 +14,10 @@ type Metrics = {
   inboundMessages24h: number;
   pendingImportDuplicates: number;
   dueFollowUps: number;
+  nextSteps: {
+    draftInquiryOrdersCount: number;
+    recentDraftInquiryOrders: Array<{ id: string; orderNumber: string; customerName: string }>;
+  };
   recentInboundMessages: Array<{
     id: string;
     customerName: string;
@@ -73,6 +78,8 @@ export default function DashboardPage() {
         <p className="minimal-muted text-xs">Auto-refresh available with manual controls.</p>
       </div>
       <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
+
+      <NextStepsStrip metrics={metrics} />
 
       <div className="minimal-grid-dynamic mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Open Leads" value={metrics?.leadOpen ?? 0} />
@@ -172,5 +179,66 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
       <p className="minimal-muted text-xs uppercase tracking-wide">{label}</p>
       <p className="minimal-kpi-value mt-1 text-xl font-semibold">{value}</p>
     </article>
+  );
+}
+
+function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
+  if (!metrics) return null;
+
+  const drafts = metrics.nextSteps?.draftInquiryOrdersCount ?? 0;
+  const recent = metrics.nextSteps?.recentDraftInquiryOrders ?? [];
+  const followUps = metrics.dueFollowUps ?? 0;
+  const hasAction = drafts > 0 || followUps > 0;
+
+  return (
+    <section
+      className={`minimal-panel minimal-panel-elevated mt-3 ${hasAction ? "border-l-4 border-[var(--primary)]" : ""}`}
+    >
+      <h2 className="text-base font-semibold">Next steps</h2>
+      <p className="minimal-muted mt-1 text-sm">
+        Quick links:{" "}
+        <Link className="font-medium text-[var(--primary)] underline" href="/intake">
+          Intake
+        </Link>
+        {" · "}
+        <Link className="font-medium text-[var(--primary)] underline" href="/orders/active">
+          Active orders
+        </Link>
+        {" · "}
+        <Link className="font-medium text-[var(--primary)] underline" href="/messages">
+          Messages
+        </Link>
+      </p>
+      <ul className="minimal-muted mt-3 list-none space-y-2 pl-0 text-sm">
+        {drafts > 0 ? (
+          <li className="rounded-md border border-[var(--border)] px-3 py-2">
+            <strong className="text-[var(--text)]">{drafts} inquiry draft order(s)</strong> — send each client the full
+            order form from the order page, or open an order below.
+            {recent.length > 0 ? (
+              <ul className="mt-2 space-y-1 pl-0">
+                {recent.map((o) => (
+                  <li key={o.id}>
+                    <Link className="text-[var(--primary)] underline" href={`/orders/${o.id}`}>
+                      {o.orderNumber}
+                    </Link>
+                    <span className="text-[var(--muted)]"> · {o.customerName}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </li>
+        ) : (
+          <li className="rounded-md border border-[var(--border)] px-3 py-2 text-[var(--muted)]">
+            No inquiry draft orders waiting on a client full-order link.
+          </li>
+        )}
+        {followUps > 0 ? (
+          <li className="rounded-md border border-[var(--border)] px-3 py-2">
+            <strong className="text-[var(--text)]">{followUps} lead follow-up(s) due</strong> — review open leads and
+            update next steps.
+          </li>
+        ) : null}
+      </ul>
+    </section>
   );
 }

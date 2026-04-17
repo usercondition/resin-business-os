@@ -2,6 +2,11 @@
 
 import { db } from "@/lib/db";
 
+const inquiryDraftOrderWhere = {
+  orderNumber: { startsWith: "INQ-" },
+  status: OrderStatus.NEW,
+};
+
 export async function getDashboardMetrics() {
   const [leadOpen, quoteDraftOrSent, ordersActive, unpaidOrders, overdueOrders, monthlyRevenueAgg] =
     await Promise.all([
@@ -31,8 +36,16 @@ export async function getDashboardMetrics() {
       }),
     ]);
 
-  const [productionByStatus, inboundMessages24h, pendingImportDuplicates, recentInboundMessages, dueFollowUps, recentActivity] =
-    await Promise.all([
+  const [
+    productionByStatus,
+    inboundMessages24h,
+    pendingImportDuplicates,
+    recentInboundMessages,
+    dueFollowUps,
+    recentActivity,
+    draftInquiryOrdersCount,
+    recentDraftInquiryOrders,
+  ] = await Promise.all([
       db.order.groupBy({
         by: ["productionStatus"],
         _count: { _all: true },
@@ -70,6 +83,17 @@ export async function getDashboardMetrics() {
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
+      db.order.count({ where: inquiryDraftOrderWhere }),
+      db.order.findMany({
+        where: inquiryDraftOrderWhere,
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          orderNumber: true,
+          customer: { select: { fullName: true } },
+        },
+      }),
     ]);
 
   return {
@@ -96,5 +120,13 @@ export async function getDashboardMetrics() {
       entityType: event.entityType,
       createdAt: event.createdAt,
     })),
+    nextSteps: {
+      draftInquiryOrdersCount: draftInquiryOrdersCount,
+      recentDraftInquiryOrders: recentDraftInquiryOrders.map((o) => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customerName: o.customer.fullName,
+      })),
+    },
   };
 }
