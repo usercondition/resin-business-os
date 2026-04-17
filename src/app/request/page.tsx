@@ -113,7 +113,7 @@ export default function ClientPrintRequestPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl py-2">
+    <main className="mx-auto max-w-3xl py-2 md:py-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Request a custom print</h1>

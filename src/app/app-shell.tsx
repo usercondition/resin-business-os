@@ -12,6 +12,14 @@ const THEME_KEY = "resin-business-os-theme";
 const SIDEBAR_MODE_KEY = "resin-business-os-sidebar-mode";
 const GROUPS_KEY = "resin-business-os-sidebar-groups";
 
+/** Client-facing routes: no sidebar / ops navigation (shareable links). */
+function isPublicStandalonePath(pathname: string | null) {
+  if (!pathname) {
+    return false;
+  }
+  return pathname === "/request" || pathname.startsWith("/request/");
+}
+
 const MENU_GROUPS = [
   {
     title: "Hub",
@@ -123,6 +131,14 @@ export default function AppShell({ children }: Props) {
 
     setTouchStartX(null);
     setTouchLastX(null);
+  }
+
+  if (isPublicStandalonePath(pathname)) {
+    return (
+      <div className="public-standalone min-h-screen bg-[var(--bg)] px-4 py-6 text-[var(--text)]">
+        {children}
+      </div>
+    );
   }
 
   return (
