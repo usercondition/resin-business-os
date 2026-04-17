@@ -3,6 +3,9 @@
 import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { IconMail } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 function LoginForm() {
   const searchParams = useSearchParams();
   const nextPath = useMemo(() => searchParams.get("next") ?? "/dashboard", [searchParams]);
@@ -43,12 +46,17 @@ function LoginForm() {
 
   return (
     <main className="mx-auto max-w-md py-10">
-      <h1 className="text-xl font-semibold tracking-tight">Sign in</h1>
-      <p className="minimal-muted mt-2 text-sm">
-        Enter the same work email you configured for this deployment (environment variable{" "}
-        <code className="rounded bg-[var(--panel)] px-1">APP_OWNER_EMAIL</code>). You will receive a one-time link valid
-        for 15 minutes.
-      </p>
+      <PageHeader
+        description={
+          <>
+            Enter the same work email you configured for this deployment (environment variable{" "}
+            <code className="rounded bg-[var(--panel)] px-1">APP_OWNER_EMAIL</code>). You will receive a one-time link
+            valid for 15 minutes.
+          </>
+        }
+        icon={IconMail}
+        title="Sign in"
+      />
       {message ? <p className="minimal-panel minimal-panel-elevated mt-4 text-sm">{message}</p> : null}
       {devLink ? (
         <p className="minimal-muted mt-3 break-all text-xs">
@@ -70,7 +78,8 @@ function LoginForm() {
             onChange={(ev) => setEmail(ev.target.value)}
           />
         </label>
-        <button className="minimal-cta" disabled={loading} type="submit">
+        <button className="minimal-cta inline-flex items-center justify-center gap-2" disabled={loading} type="submit">
+          <IconMail size={16} />
           {loading ? "Sending…" : "Email me a sign-in link"}
         </button>
       </form>

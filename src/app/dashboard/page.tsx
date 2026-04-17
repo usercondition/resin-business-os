@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  IconBell,
+  IconInbox,
+  IconLayoutDashboard,
+  IconRefreshCw,
+  IconUpload,
+} from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type Metrics = {
   leadOpen: number;
   quoteDraftOrSent: number;
@@ -69,14 +78,16 @@ export default function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Operations Dashboard</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        At-a-glance hub for sales pipeline, reply queue, import review, and production priorities.
-      </p>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="status-pill">Live Operations View</p>
-        <p className="minimal-muted text-xs">Auto-refresh available with manual controls.</p>
-      </div>
+      <PageHeader
+        description="At-a-glance hub for sales pipeline, reply queue, import review, and production priorities."
+        icon={IconLayoutDashboard}
+        title="Operations Dashboard"
+      >
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="status-pill">Live Operations View</p>
+          <p className="minimal-muted text-xs">Auto-refresh available with manual controls.</p>
+        </div>
+      </PageHeader>
       <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
 
       <NextStepsStrip metrics={metrics} />
@@ -159,14 +170,17 @@ export default function DashboardPage() {
       </section>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <button className="minimal-cta" onClick={loadData}>
-          Refresh Metrics
+        <button className="minimal-cta inline-flex items-center gap-2" onClick={loadData} type="button">
+          <IconRefreshCw size={16} />
+          Refresh metrics
         </button>
-        <button className="app-button" onClick={runReminders}>
-          Run Reminder Engine
+        <button className="app-button inline-flex items-center gap-2" onClick={runReminders} type="button">
+          <IconBell size={16} />
+          Run reminder engine
         </button>
-        <a className="app-button" href="/ops/imports">
-          Open Import Review
+        <a className="app-button inline-flex items-center gap-2" href="/ops/imports">
+          <IconUpload size={16} />
+          Open import review
         </a>
       </div>
     </main>
@@ -194,7 +208,10 @@ function NextStepsStrip({ metrics }: { metrics: Metrics | null }) {
     <section
       className={`minimal-panel minimal-panel-elevated mt-3 ${hasAction ? "border-l-4 border-[var(--primary)]" : ""}`}
     >
-      <h2 className="text-base font-semibold">Next steps</h2>
+      <h2 className="flex items-center gap-2 text-base font-semibold">
+        <IconInbox size={18} className="text-[var(--muted)]" aria-hidden />
+        Next steps
+      </h2>
       <p className="minimal-muted mt-1 text-sm">
         Quick links:{" "}
         <Link className="link-terminal font-medium underline" href="/intake">

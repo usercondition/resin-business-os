@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from "react";
 
+import { IconClipboardList, IconUpload, IconUsers } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type ApiResult = {
   ok: boolean;
   data?: unknown;
@@ -75,10 +78,14 @@ export default function OpsPage() {
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 px-4 py-4">
-      <h1 className="text-xl font-semibold">Ops Quick Actions</h1>
-      <p className="minimal-muted text-sm">Mobile-first forms for day-to-day entry and status changes.</p>
+      <PageHeader
+        description="Mobile-first forms for day-to-day entry and status changes."
+        icon={IconClipboardList}
+        title="Ops Quick Actions"
+      />
       <p className="minimal-panel p-2 text-sm">{message}</p>
-      <a className="app-button" href="/ops/imports">
+      <a className="app-button inline-flex items-center justify-center gap-2" href="/ops/imports">
+        <IconUpload size={16} />
         Open Import Review Queue
       </a>
 
@@ -91,7 +98,8 @@ export default function OpsPage() {
           onChange={(event) => setCustomerName(event.target.value)}
           required
         />
-        <button className="minimal-cta mt-2 w-full text-center" type="submit">
+        <button className="minimal-cta mt-2 inline-flex w-full items-center justify-center gap-2 text-center" type="submit">
+          <IconUsers size={16} />
           Create Customer
         </button>
       </form>

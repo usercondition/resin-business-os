@@ -133,6 +133,9 @@ a {
 }
 
 .app-sidebar-brand a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -142,6 +145,11 @@ a {
 
 .app-sidebar-brand a:hover {
   color: var(--muted);
+}
+
+.sidebar-icon {
+  flex-shrink: 0;
+  opacity: 0.92;
 }
 
 .app-sidebar-nav {
@@ -178,7 +186,9 @@ a {
 }
 
 .app-sidebar-nav a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.35rem 0.5rem;
   border-radius: var(--radius-sm);
   font-size: 0.8125rem;
@@ -186,6 +196,14 @@ a {
   text-decoration: none;
   color: var(--text);
   transition: background 0.12s ease, color 0.12s ease;
+}
+
+.app-sidebar-nav a .sidebar-icon {
+  opacity: 0.85;
+}
+
+.app-sidebar-nav a.is-active .sidebar-icon {
+  opacity: 1;
 }
 
 .app-sidebar-nav a:hover {
@@ -209,12 +227,15 @@ a {
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .app-sidebar-link {
   border: 0;
   background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   padding: 0.35rem 0.25rem;
   text-align: left;
   font: inherit;
@@ -222,6 +243,11 @@ a {
   color: var(--muted);
   cursor: pointer;
   border-radius: var(--radius-sm);
+}
+
+.app-sidebar-link svg {
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .app-sidebar-link:hover:not(:disabled) {

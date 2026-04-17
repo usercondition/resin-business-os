@@ -3,6 +3,9 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { IconMail } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 function VerifyInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -57,7 +60,7 @@ function VerifyInner() {
 
   return (
     <main className="mx-auto max-w-md py-10">
-      <h1 className="text-xl font-semibold tracking-tight">Signing you in</h1>
+      <PageHeader icon={IconMail} title="Signing you in" />
       <p className="minimal-panel minimal-panel-elevated mt-4 text-sm">{message}</p>
       <p className="minimal-muted mt-3 text-xs">
         If this page stays here, open a fresh magic link from your email (links are single-use).

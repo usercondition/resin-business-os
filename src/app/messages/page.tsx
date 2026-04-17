@@ -2,6 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { IconMessageSquare, IconSearch } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type EmailMessage = {
   id: string;
   customerId: string;
@@ -99,20 +102,29 @@ export default function MessagesPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Email Message Center</h1>
-      <p className="minimal-muted mt-1 text-sm">Unified inbox for email and client-portal messages.</p>
+      <PageHeader
+        description="Unified inbox for email and client-portal messages."
+        icon={IconMessageSquare}
+        title="Email Message Center"
+      />
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <section className="minimal-panel lg:col-span-1">
           <div className="flex gap-2">
-            <input
-              className="w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-              placeholder="Search messages"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            <button className="app-button" onClick={() => void loadMessages()} type="button">
+            <div className="relative min-w-0 flex-1">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+                <IconSearch size={16} />
+              </span>
+              <input
+                className="w-full rounded-md border border-[var(--border)] bg-transparent py-2 pl-9 pr-3 text-sm"
+                placeholder="Search messages"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
+            <button className="app-button inline-flex items-center gap-1.5" onClick={() => void loadMessages()} type="button">
+              <IconSearch size={15} />
               Search
             </button>
           </div>

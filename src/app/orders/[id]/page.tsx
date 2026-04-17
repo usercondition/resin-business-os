@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { IconArrowLeft, IconPackage } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
 import { OrderIntakeStrip } from "@/components/order-intake-strip";
 import { OrderPortalPanel } from "@/components/order-portal-panel";
 
@@ -53,18 +55,26 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   return (
     <main className="mx-auto max-w-4xl py-2">
       <button
-        className="app-button mb-3"
+        className="app-button mb-3 inline-flex items-center gap-2"
         onClick={() => {
           if (window.history.length > 1) router.back();
           else router.push("/orders");
         }}
         type="button"
       >
+        <IconArrowLeft size={16} />
         Back to orders
       </button>
-      <h1 className="text-xl font-semibold">Order</h1>
-      <p className="minimal-muted mt-1 text-sm">Complete order context: workflow state, client updates, and timeline.</p>
-      <p className="minimal-muted mt-1 text-sm">{message}</p>
+      <PageHeader
+        description={
+          <>
+            Complete order context: workflow state, client updates, and timeline.
+            <span className="mt-1 block text-xs">{message}</span>
+          </>
+        }
+        icon={IconPackage}
+        title="Order"
+      />
 
       {data?.order ? (
         <OrderIntakeStrip orderId={data.order.id} orderNumber={data.order.orderNumber} status={data.order.status} />

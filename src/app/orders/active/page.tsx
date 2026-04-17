@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { IconActivity, IconSearch } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
 import { formatUsd } from "@/lib/format-money";
 
 type OrderRow = {
@@ -61,21 +63,27 @@ export default function ActiveOrdersPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Active orders</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        Live operational queue of open orders. Closed and cancelled orders are excluded.
-      </p>
+      <PageHeader
+        description="Live operational queue of open orders. Closed and cancelled orders are excluded."
+        icon={IconActivity}
+        title="Active orders"
+      />
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
       <section className="minimal-panel mt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Open order containers ({activeOrders.length})</h2>
-          <input
-            className="w-full max-w-xs rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-            placeholder="Search active orders"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+          <div className="relative w-full max-w-xs">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+              <IconSearch size={16} />
+            </span>
+            <input
+              className="w-full rounded-md border border-[var(--border)] bg-transparent py-2 pl-9 pr-3 text-sm"
+              placeholder="Search active orders"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
         </div>
 
         <div className="mt-3 grid gap-2">

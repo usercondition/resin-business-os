@@ -3,6 +3,8 @@
 import { DeliveryStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@prisma/client";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { IconPackage } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
 import { formatUsd } from "@/lib/format-money";
 
 type Customer = {
@@ -381,17 +383,23 @@ export default function OrdersPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">All orders</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        Full order list and history. Use manual order entry below for orders you create directly in the app.
-      </p>
+      <PageHeader
+        description="Full order list and history. Use manual order entry below for orders you create directly in the app."
+        icon={IconPackage}
+        title="All orders"
+      />
       <p className="minimal-panel mt-3 text-sm">{message}</p>
 
       <section className="minimal-panel mt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-semibold">{editingOrderId ? "Edit order" : "Manual order entry"}</h2>
           {!showManualForm ? (
-            <button className="minimal-cta" onClick={() => setShowManualForm(true)} type="button">
+            <button
+              className="minimal-cta inline-flex items-center gap-2"
+              onClick={() => setShowManualForm(true)}
+              type="button"
+            >
+              <IconPackage size={16} />
               New manual order
             </button>
           ) : (

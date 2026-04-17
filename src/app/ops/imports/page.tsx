@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { IconUpload } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type ImportRow = {
   id: string;
   syncLogId: string;
@@ -75,8 +78,11 @@ export default function OpsImportsPage() {
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-4">
-      <h1 className="text-xl font-semibold">Import Review Queue</h1>
-      <p className="minimal-muted text-sm">Review duplicates and maintain source mapping profiles.</p>
+      <PageHeader
+        description="Review duplicates and maintain source mapping profiles."
+        icon={IconUpload}
+        title="Import Review Queue"
+      />
       <p className="minimal-panel p-2 text-sm">{message}</p>
 
       <section className="minimal-panel p-4">

@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { IconArrowRight, IconSearch, IconUsers } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type Customer = {
   id: string;
   fullName: string;
@@ -54,13 +57,19 @@ export default function CustomerLookupPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Customers</h1>
-      <p className="minimal-muted mt-1 text-sm">Alphabetical customer list with personal and contact details.</p>
+      <PageHeader
+        description="Alphabetical customer list with personal and contact details."
+        icon={IconUsers}
+        title="Customers"
+      />
       <p className="minimal-panel minimal-panel-elevated mt-3 text-sm">{message}</p>
 
-      <div className="mt-4">
+      <div className="relative mt-4 max-w-sm">
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+          <IconSearch size={16} />
+        </span>
         <input
-          className="w-full max-w-sm rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+          className="w-full rounded-md border border-[var(--border)] bg-transparent py-2 pl-9 pr-3 text-sm"
           placeholder="Search customers"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -72,8 +81,9 @@ export default function CustomerLookupPage() {
           <article className="minimal-panel minimal-panel-elevated" key={customer.id}>
             <div className="flex items-start justify-between gap-2">
               <h2 className="text-base font-semibold">{customer.fullName}</h2>
-              <a className="app-button text-xs" href={`/customers/${customer.id}`}>
+              <a className="app-button inline-flex items-center gap-1 text-xs" href={`/customers/${customer.id}`}>
                 Open
+                <IconArrowRight size={12} />
               </a>
             </div>
             <p className="minimal-muted mt-2 text-xs">ID: {customer.id}</p>

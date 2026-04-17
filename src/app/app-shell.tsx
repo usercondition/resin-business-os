@@ -4,6 +4,24 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
+import type { IconProps } from "@/components/icons";
+import {
+  IconActivity,
+  IconArchive,
+  IconBarChart3,
+  IconGlobe,
+  IconInbox,
+  IconLayoutDashboard,
+  IconLayers,
+  IconLogOut,
+  IconMessageSquare,
+  IconMoon,
+  IconPackage,
+  IconSun,
+  IconUpload,
+  IconUsers,
+} from "@/components/icons";
+
 type Props = {
   children: React.ReactNode;
   /** From server: valid shop session cookie. Used so staff keep header/sidebar on client-facing routes. */
@@ -52,30 +70,36 @@ function isPublicStandalonePath(pathname: string | null, hasStaffShopSession: bo
   return true;
 }
 
-const MENU_GROUPS: { title: string; items: { href: string; label: string }[] }[] = [
+type MenuItem = {
+  href: string;
+  label: string;
+  Icon: React.ComponentType<IconProps>;
+};
+
+const MENU_GROUPS: { title: string; items: MenuItem[] }[] = [
   {
     title: "Hub",
     items: [
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/portal", label: "Customer portal" },
+      { href: "/dashboard", label: "Dashboard", Icon: IconLayoutDashboard },
+      { href: "/portal", label: "Customer portal", Icon: IconGlobe },
     ],
   },
   {
     title: "Operations",
     items: [
-      { href: "/orders/active", label: "Active orders" },
-      { href: "/orders", label: "All orders" },
-      { href: "/intake", label: "Intake" },
-      { href: "/messages", label: "Messages" },
-      { href: "/customers", label: "Customers" },
-      { href: "/inventory", label: "Inventory" },
+      { href: "/orders/active", label: "Active orders", Icon: IconActivity },
+      { href: "/orders", label: "All orders", Icon: IconPackage },
+      { href: "/intake", label: "Intake", Icon: IconInbox },
+      { href: "/messages", label: "Messages", Icon: IconMessageSquare },
+      { href: "/customers", label: "Customers", Icon: IconUsers },
+      { href: "/inventory", label: "Inventory", Icon: IconArchive },
     ],
   },
   {
     title: "Insights",
     items: [
-      { href: "/analytics", label: "Analytics" },
-      { href: "/ops/imports", label: "Import review" },
+      { href: "/analytics", label: "Analytics", Icon: IconBarChart3 },
+      { href: "/ops/imports", label: "Import review", Icon: IconUpload },
     ],
   },
 ];
@@ -127,7 +151,10 @@ export default function AppShell({ children, hasStaffShopSession = false }: Prop
     <div className="app-frame">
       <aside className="app-sidebar" aria-label="Main navigation">
         <div className="app-sidebar-brand">
-          <Link href="/dashboard">Resin OS</Link>
+          <Link href="/dashboard">
+            <IconLayers className="sidebar-icon" size={18} />
+            <span>Resin OS</span>
+          </Link>
         </div>
 
         <nav className="app-sidebar-nav">
@@ -135,13 +162,20 @@ export default function AppShell({ children, hasStaffShopSession = false }: Prop
             <div className="app-nav-group" key={group.title}>
               <p className="app-nav-group-label">{group.title}</p>
               <ul className="app-nav-list">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    <Link className={isActiveRoute(item.href) ? "is-active" : undefined} href={item.href}>
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                {group.items.map((item) => {
+                  const { Icon } = item;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        className={isActiveRoute(item.href) ? "is-active" : undefined}
+                        href={item.href}
+                      >
+                        <Icon className="sidebar-icon" size={16} />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
@@ -149,10 +183,12 @@ export default function AppShell({ children, hasStaffShopSession = false }: Prop
 
         <div className="app-sidebar-footer">
           <button className="app-sidebar-link" disabled={signingOut} onClick={() => void signOut()} type="button">
-            {signingOut ? "Signing out…" : "Sign out"}
+            <IconLogOut size={14} />
+            <span>{signingOut ? "Signing out…" : "Sign out"}</span>
           </button>
           <button className="app-sidebar-link" onClick={toggleTheme} type="button">
-            {theme === "light" ? "Dark mode" : "Light mode"}
+            {theme === "light" ? <IconMoon size={14} /> : <IconSun size={14} />}
+            <span>{theme === "light" ? "Dark mode" : "Light mode"}</span>
           </button>
         </div>
       </aside>

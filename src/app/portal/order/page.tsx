@@ -3,6 +3,8 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { IconLogOut, IconPackage } from "@/components/icons";
+
 type Bundle = {
   order: {
     orderNumber: string;
@@ -88,12 +90,18 @@ export default function PortalOrderPage() {
   return (
     <main className="mx-auto max-w-3xl py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{order.orderNumber}</h1>
-          <p className="minimal-muted mt-1 text-sm">{order.customerName}</p>
-          <p className="minimal-muted mt-1 text-sm">Review status updates, progress photos, and chat with the shop.</p>
+        <div className="flex items-start gap-2.5">
+          <span className="mt-0.5 text-[var(--muted)]" aria-hidden>
+            <IconPackage size={24} />
+          </span>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">{order.orderNumber}</h1>
+            <p className="minimal-muted mt-1 text-sm">{order.customerName}</p>
+            <p className="minimal-muted mt-1 text-sm">Review status updates, progress photos, and chat with the shop.</p>
+          </div>
         </div>
-        <button className="app-button text-sm" onClick={() => void signOut()} type="button">
+        <button className="app-button inline-flex items-center gap-2 text-sm" onClick={() => void signOut()} type="button">
+          <IconLogOut size={15} />
           Sign out
         </button>
       </div>

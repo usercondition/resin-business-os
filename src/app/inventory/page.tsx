@@ -1,10 +1,14 @@
+import { IconArchive } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 export default function InventoryPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Inventory</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        Inventory control center for resin materials, consumables, and reorder priorities.
-      </p>
+      <PageHeader
+        description="Inventory control center for resin materials, consumables, and reorder priorities."
+        icon={IconArchive}
+        title="Inventory"
+      />
 
       <section className="minimal-panel mt-4">
         <h2 className="text-base font-semibold">Core Inventory Modules</h2>

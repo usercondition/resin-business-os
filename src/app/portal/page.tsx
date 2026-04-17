@@ -3,6 +3,9 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { IconGlobe } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 export default function PortalLoginPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -36,12 +39,17 @@ export default function PortalLoginPage() {
 
   return (
     <main className="mx-auto max-w-md py-8">
-      <h1 className="text-xl font-semibold tracking-tight">Order portal</h1>
-      <p className="minimal-muted mt-2 text-sm">
-        Each order belongs to the customer on that order. Use your <strong>first name</strong>,{" "}
-        <strong>last name</strong> (as they appear on the order), and your <strong>order number</strong>{" "}
-        (for example ORD-2026-XXXXXXXX).
-      </p>
+      <PageHeader
+        description={
+          <>
+            Each order belongs to the customer on that order. Use your <strong>first name</strong>,{" "}
+            <strong>last name</strong> (as they appear on the order), and your <strong>order number</strong> (for example
+            ORD-2026-XXXXXXXX).
+          </>
+        }
+        icon={IconGlobe}
+        title="Order portal"
+      />
       <p className="minimal-panel mt-4 text-sm">{message}</p>
       <form className="minimal-panel mt-4 grid gap-3" onSubmit={onSubmit}>
         <label className="text-sm">
@@ -75,7 +83,8 @@ export default function PortalLoginPage() {
             onChange={(e) => setOrderNumber(e.target.value)}
           />
         </label>
-        <button className="minimal-cta" disabled={loading} type="submit">
+        <button className="minimal-cta inline-flex items-center justify-center gap-2" disabled={loading} type="submit">
+          <IconGlobe size={16} />
           {loading ? "Signing in…" : "View order"}
         </button>
       </form>

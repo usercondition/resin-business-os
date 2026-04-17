@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { IconUsers } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 type CustomerDetailResponse = {
   customer: {
     id: string;
@@ -35,8 +38,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-4">
-      <h1 className="text-xl font-semibold text-[color:var(--text)]">Customer Detail</h1>
-      <p className="minimal-muted mt-1 text-sm">{message}</p>
+      <PageHeader description={message} icon={IconUsers} title="Customer detail" />
 
       <section className="minimal-panel mt-3">
         <h2 className="text-lg font-semibold text-[color:var(--text)]">{data?.customer.fullName ?? "-"}</h2>

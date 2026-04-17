@@ -1,10 +1,14 @@
+import { IconBarChart3 } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+
 export default function AnalyticsPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-4">
-      <h1 className="text-xl font-semibold">Analytics</h1>
-      <p className="minimal-muted mt-1 text-sm">
-        Premium insights hub for conversion trends, order velocity, and production efficiency.
-      </p>
+      <PageHeader
+        description="Premium insights hub for conversion trends, order velocity, and production efficiency."
+        icon={IconBarChart3}
+        title="Analytics"
+      />
 
       <section className="minimal-panel mt-4">
         <h2 className="text-base font-semibold">Coming Next</h2>
