@@ -1,0 +1,8 @@
+# Railway config-as-code: https://docs.railway.app/guides/config-as-code
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+# Apply Prisma migrations on each deploy, then start Next.js (listens on PORT automatically).
+releaseCommand = "npx prisma migrate deploy"
+startCommand = "npm run start"
