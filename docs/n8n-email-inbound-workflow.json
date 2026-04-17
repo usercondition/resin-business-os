@@ -1,0 +1,111 @@
+{
+  "name": "Resin Business OS — Gmail → inbound email webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "event": "messageReceived",
+        "simple": true,
+        "filters": {
+          "readStatus": "unread",
+          "q": "in:inbox newer_than:7d"
+        },
+        "options": {}
+      },
+      "id": "gmail-trigger-inbound-1",
+      "name": "Gmail — new message",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 320],
+      "notesInFlow": true,
+      "notes": "Attach Gmail OAuth2 (gmailOAuth2). Adjust filters.q (Gmail search) to match your traffic."
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * HMAC must match the exact raw JSON string sent in the HTTP body.\n * n8n Cloud: set variable RESIN_EMAIL_WEBHOOK_SECRET (Settings → Variables) and use:\n *   const secret = $vars.RESIN_EMAIL_WEBHOOK_SECRET;\n * Self-hosted: process.env often works.\n */\nlet secret = '';\ntry {\n  secret = typeof $vars !== 'undefined' && $vars.RESIN_EMAIL_WEBHOOK_SECRET\n    ? String($vars.RESIN_EMAIL_WEBHOOK_SECRET)\n    : '';\n} catch (e) {\n  secret = '';\n}\nif (!secret && typeof process !== 'undefined' && process.env && process.env.RESIN_EMAIL_WEBHOOK_SECRET) {\n  secret = String(process.env.RESIN_EMAIL_WEBHOOK_SECRET);\n}\nif (!secret) {\n  throw new Error('Set RESIN_EMAIL_WEBHOOK_SECRET (n8n Variable) or process.env for self-hosted.');\n}\nconst crypto = require('crypto');\nconst j = $input.first().json;\nconst fromVal = j.from?.value?.[0]?.address || j.from?.text || j.from || j.headers?.from || '';\nlet fromEmail = String(fromVal).trim();\nconst angle = fromEmail.match(/<([^>]+)>/);\nif (angle) fromEmail = angle[1].trim();\nconst fromName = j.from?.value?.[0]?.name || '';\nconst subject = j.subject || '(no subject)';\nconst textBody = j.text || j.textPlain || j.snippet || '';\nconst externalMessageId = j.id || j.messageId;\nconst toFirst = j.to?.value?.[0]?.address || j.to?.text || '';\nconst payload = {\n  fromEmail,\n  fromName: fromName || undefined,\n  toEmail: toFirst || undefined,\n  subject,\n  textBody,\n  externalMessageId: externalMessageId || undefined,\n};\nconst rawBody = JSON.stringify(payload);\nconst signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');\nreturn [{ json: { rawBody, signature } }];"
+      },
+      "id": "code-sign-inbound-1",
+      "name": "Build body + x-resin-signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://127.0.0.1:3000/api/webhooks/email/inbound",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-resin-signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.rawBody }}",
+        "options": {}
+      },
+      "id": "http-inbound-1",
+      "name": "POST → Resin OS inbound",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 320],
+      "notesInFlow": true,
+      "notes": "Replace host with your public app URL (keep /api/webhooks/email/inbound). Body must stay the exact rawBody string from the Code node."
+    },
+    {
+      "parameters": {
+        "content": "## Gmail → Resin OS (inbound)\n\n### App `.env`\n- `EMAIL_INBOUND_SIGNING_SECRET` **or** `N8N_WEBHOOK_SIGNING_SECRET` (same value you put in n8n).\n\n### n8n Cloud\n1. **Settings → Variables:** create `RESIN_EMAIL_WEBHOOK_SECRET` (same as app secret).\n2. If Code errors on `require('crypto')`: enable Node.js modules for Code (workflow / instance security settings) or upgrade n8n.\n3. In HTTP Request, set URL to your live **https://YOUR-DOMAIN/api/webhooks/email/inbound** (default JSON uses 127.0.0.1 for local dev).\n\n### If n8n shows “Update parameter” warnings\n- **Gmail search `q`:** must be a real Gmail query (template uses `in:inbox newer_than:7d`).\n- **HTTP URL:** must be valid `https://…` (change host from 127.0.0.1 for cloud).\n\n### If you still see errors before run\n- Gmail trigger: attach **Gmail OAuth2**.\n- Code: `RESIN_EMAIL_WEBHOOK_SECRET` variable must exist on n8n Cloud.\n",
+        "height": 560,
+        "width": 440
+      },
+      "id": "sticky-inbound-1",
+      "name": "Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [40, 40]
+    }
+  ],
+  "connections": {
+    "Gmail — new message": {
+      "main": [
+        [
+          {
+            "node": "Build body + x-resin-signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build body + x-resin-signature": {
+      "main": [
+        [
+          {
+            "node": "POST → Resin OS inbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

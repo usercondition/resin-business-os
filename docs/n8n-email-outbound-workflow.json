@@ -1,0 +1,158 @@
+{
+  "name": "Resin Business OS — Email outbound (reply / forward)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-outbound",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-resin-email-1",
+      "name": "Inbound from Resin OS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 320],
+      "webhookId": "email-outbound-resin-os"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Body from app: { event, payload }\n */\nconst item = $input.first().json;\nconst event = item.event;\nconst p = item.payload || {};\nif (event === 'email.reply_requested' && !p.toEmail) {\n  throw new Error('Reply requires customer email (payload.toEmail).');\n}\nif (event === 'email.forward_requested' && !p.toEmail) {\n  throw new Error('Forward requires payload.toEmail.');\n}\nreturn [{\n  json: {\n    event,\n    to: p.toEmail,\n    subject: p.subject,\n    text: p.body,\n    payload: p\n  }\n}];"
+      },
+      "id": "code-normalize-email-1",
+      "name": "Normalize for send",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-reply",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "email.reply_requested",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-reply-1",
+      "name": "Is reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [780, 320]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "gmail-reply-1",
+      "name": "Gmail — send (reply)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1040, 200],
+      "notesInFlow": true,
+      "notes": "Attach Gmail OAuth2 (gmailOAuth2)."
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "gmail-forward-1",
+      "name": "Gmail — send (forward)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1040, 440],
+      "notesInFlow": true,
+      "notes": "Attach Gmail OAuth2 (gmailOAuth2)."
+    },
+    {
+      "parameters": {
+        "content": "## Resin Business OS — outbound email\n\n### App `.env`\n- `N8N_EMAIL_OUTBOUND_WEBHOOK_URL` = this workflow’s **Production Webhook URL**.\n- `N8N_WEBHOOK_SIGNING_SECRET` = optional HMAC secret (app sends `x-n8n-signature`).\n\n### n8n\n1. Open **Inbound from Resin OS** Webhook — path is **`email-outbound`**. Copy the **Production Webhook URL** into app env **`N8N_EMAIL_OUTBOUND_WEBHOOK_URL`** (full URL, unchanged path).\n2. Attach **Gmail OAuth2** on **both** Gmail nodes.\n3. **Activate** the workflow.\n\n### Webhook response\n**lastNode** mode: HTTP response body comes from the **Gmail** node on the branch that ran.\n\n### Builder warnings (“Update parameter…”)\n- Set **Webhook path** to a real slug (template: `email-outbound`).\n- If you change the path, update **`N8N_EMAIL_OUTBOUND_WEBHOOK_URL`** in the app to match.\n",
+        "height": 520,
+        "width": 440
+      },
+      "id": "sticky-setup-1",
+      "name": "Setup instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [40, 40]
+    }
+  ],
+  "connections": {
+    "Inbound from Resin OS": {
+      "main": [
+        [
+          {
+            "node": "Normalize for send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize for send": {
+      "main": [
+        [
+          {
+            "node": "Is reply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is reply?": {
+      "main": [
+        [
+          {
+            "node": "Gmail — send (reply)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail — send (forward)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
