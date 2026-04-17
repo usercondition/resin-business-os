@@ -33,7 +33,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://example.com/api/webhooks/email/inbound",
+        "url": "https://resin-business-os-production.up.railway.app/api/webhooks/email/inbound",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -60,11 +60,11 @@
       "typeVersion": 4.2,
       "position": [800, 320],
       "notesInFlow": true,
-      "notes": "URL must be a real https origin + this path (replace example.com with your deployed app, e.g. Vercel/Railway). n8n Cloud rejects placeholder hint text and often localhost — use a public host."
+      "notes": "Default URL points at Railway production. If your Railway hostname differs, edit only the host; keep path /api/webhooks/email/inbound."
     },
     {
       "parameters": {
-        "content": "## Gmail → Resin OS (inbound)\n\n### App `.env`\n- `EMAIL_INBOUND_SIGNING_SECRET` **or** `N8N_WEBHOOK_SIGNING_SECRET` (same value you put in n8n).\n\n### n8n Cloud\n1. **Settings → Variables:** create `RESIN_EMAIL_WEBHOOK_SECRET` (same as app secret).\n2. If Code errors on `require('crypto')`: enable Node.js modules for Code (workflow / instance security settings) or upgrade n8n.\n3. **HTTP Request → URL:** must be a normal URL only — e.g. `https://your-app.vercel.app/api/webhooks/email/inbound`. Do **not** paste the long “Your app BASE_URL + …” sentence into the field; delete it and type/paste **only** the https URL.\n\n### If n8n shows “Update parameter” warnings\n- **Gmail search `q`:** real Gmail query (template: `in:inbox newer_than:7d`).\n- **HTTP URL:** default `https://example.com/...` passes validation; swap `example.com` for your real host before relying on it.\n\n### If you still see errors before run\n- Gmail trigger: attach **Gmail OAuth2**.\n- Code: `RESIN_EMAIL_WEBHOOK_SECRET` variable must exist on n8n Cloud.\n",
+        "content": "## Gmail → Resin OS (inbound)\n\n### App `.env`\n- `EMAIL_INBOUND_SIGNING_SECRET` **or** `N8N_WEBHOOK_SIGNING_SECRET` (same value you put in n8n).\n\n### n8n Cloud\n1. **Settings → Variables:** create `RESIN_EMAIL_WEBHOOK_SECRET` (same as app secret).\n2. If Code errors on `require('crypto')`: enable Node.js modules for Code (workflow / instance security settings) or upgrade n8n.\n3. **HTTP Request → URL:** must be **only** the https URL (no extra text). This template uses **`https://resin-business-os-production.up.railway.app/api/webhooks/email/inbound`** — change the host if your Railway URL is different.\n\n### If n8n shows “Update parameter” warnings\n- **Gmail search `q`:** real Gmail query (template: `in:inbox newer_than:7d`).\n- **HTTP URL:** must match your live app and stay on path `/api/webhooks/email/inbound`.\n\n### If you still see errors before run\n- Gmail trigger: attach **Gmail OAuth2**.\n- Code: `RESIN_EMAIL_WEBHOOK_SECRET` variable must exist on n8n Cloud.\n",
         "height": 560,
         "width": 440
       },
