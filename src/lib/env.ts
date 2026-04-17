@@ -24,6 +24,11 @@ const envSchema = z.object({
   N8N_WEBHOOK_SIGNING_SECRET: z.string().optional(),
   /** Dedicated secret for `/api/webhooks/email/inbound` (falls back to `N8N_WEBHOOK_SIGNING_SECRET`). */
   EMAIL_INBOUND_SIGNING_SECRET: z.string().optional(),
+  /**
+   * Optional alias for the same secret n8n stores as `RESIN_EMAIL_WEBHOOK_SECRET` (Settings → Variables).
+   * Lets you use one variable name on Railway and n8n without duplicating values under two keys.
+   */
+  RESIN_EMAIL_WEBHOOK_SECRET: z.string().optional(),
   /** n8n Webhook URL (production/test) that receives outbound email jobs from this app */
   N8N_EMAIL_OUTBOUND_WEBHOOK_URL: optionalUrl,
   MESSENGER_WEBHOOK_SIGNING_SECRET: z.string().optional(),

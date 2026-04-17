@@ -31,7 +31,12 @@ const inboundBodySchema = z
   });
 
 function inboundSigningSecret() {
-  return env.EMAIL_INBOUND_SIGNING_SECRET ?? env.N8N_WEBHOOK_SIGNING_SECRET ?? null;
+  return (
+    env.EMAIL_INBOUND_SIGNING_SECRET ??
+    env.RESIN_EMAIL_WEBHOOK_SECRET ??
+    env.N8N_WEBHOOK_SIGNING_SECRET ??
+    null
+  );
 }
 
 export async function POST(request: NextRequest) {
@@ -42,7 +47,7 @@ export async function POST(request: NextRequest) {
     const secret = inboundSigningSecret();
     if (!secret) {
       return fail(
-        "Inbound email webhook is not configured. Set EMAIL_INBOUND_SIGNING_SECRET or N8N_WEBHOOK_SIGNING_SECRET.",
+        "Inbound email webhook is not configured. Set EMAIL_INBOUND_SIGNING_SECRET, RESIN_EMAIL_WEBHOOK_SECRET, or N8N_WEBHOOK_SIGNING_SECRET.",
         503,
       );
     }
