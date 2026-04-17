@@ -10,5 +10,6 @@ export function middleware(_request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\..*).*)"],
+  /** Skip API + static so the Edge middleware never runs on `/api/*` (avoids spurious 500s on some hosts). */
+  matcher: ["/((?!api|_next/static|_next/image|.*\\..*).*)"],
 };
