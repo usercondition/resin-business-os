@@ -28,9 +28,16 @@ export class HttpError extends Error {
   }
 }
 
+function firstZodMessage(error: ZodError): string {
+  const first = error.errors[0];
+  if (!first) return "Validation failed";
+  const path = first.path.length ? `${first.path.join(".")}: ` : "";
+  return `${path}${first.message}`;
+}
+
 export function handleRouteError(error: unknown) {
   if (error instanceof ZodError) {
-    return fail("Validation failed", 422, error.flatten());
+    return fail(firstZodMessage(error), 422, error.flatten());
   }
 
   if (error instanceof HttpError) {

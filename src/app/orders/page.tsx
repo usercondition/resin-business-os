@@ -106,6 +106,20 @@ function emptyNewCustomer(): NewCustomerFields {
   return { fullName: "", phone: "", email: "", preferredContactChannel: "", defaultAddress: "", notes: "" };
 }
 
+/** Browser HTML5 validation can block `onSubmit` entirely; we validate in handlers instead. */
+async function parseShopJson(res: Response): Promise<{ ok: boolean; data?: unknown; error?: { message?: string } }> {
+  let parsed: unknown;
+  try {
+    parsed = await res.json();
+  } catch {
+    throw new Error(`Request failed (${res.status}). The server did not return JSON.`);
+  }
+  if (!parsed || typeof parsed !== "object" || !("ok" in parsed)) {
+    throw new Error(`Invalid response (${res.status})`);
+  }
+  return parsed as { ok: boolean; data?: unknown; error?: { message?: string } };
+}
+
 export default function OrdersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -182,7 +196,7 @@ export default function OrdersPage() {
 
   function buildItemsPayload() {
     return form.items.map((item) => ({
-      itemName: item.itemName,
+      itemName: item.itemName.trim(),
       quantity: Number(item.quantity),
       unitPrice: Number(item.unitPrice),
       materialType: item.materialType || undefined,
@@ -193,15 +207,44 @@ export default function OrdersPage() {
     }));
   }
 
+  function validateLineItems(): string | null {
+    for (let i = 0; i < form.items.length; i++) {
+      const row = form.items[i];
+      if (!row.itemName.trim()) {
+        return `Line ${i + 1}: enter an item or service name.`;
+      }
+      const qty = Number(row.quantity);
+      if (!Number.isFinite(qty) || qty < 1 || !Number.isInteger(qty)) {
+        return `Line ${i + 1}: quantity must be a whole number of at least 1.`;
+      }
+      const price = Number(row.unitPrice);
+      if (!Number.isFinite(price) || price < 0) {
+        return `Line ${i + 1}: unit price must be zero or greater.`;
+      }
+    }
+    return null;
+  }
+
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
+    const lineErr = validateLineItems();
+    if (lineErr) {
+      setMessage(lineErr);
+      return;
+    }
     if (customerEntryMode === "existing" && !form.customerId) {
       setMessage("Select an existing customer before creating the order.");
       return;
     }
-    if (customerEntryMode === "new" && !newCustomer.email.trim() && !newCustomer.phone.trim()) {
-      setMessage("New customer: enter an email or phone number.");
-      return;
+    if (customerEntryMode === "new") {
+      if (newCustomer.fullName.trim().length < 2) {
+        setMessage("New customer: enter a full name (at least 2 characters).");
+        return;
+      }
+      if (!newCustomer.email.trim() && !newCustomer.phone.trim()) {
+        setMessage("New customer: enter an email or phone number.");
+        return;
+      }
     }
     setLoading(true);
     setMessage("Creating order...");
@@ -251,7 +294,7 @@ export default function OrdersPage() {
         ...shopJsonFetch,
         body: JSON.stringify(payload),
       });
-      const json = await response.json();
+      const json = await parseShopJson(response);
       if (!json.ok) {
         throw new Error(json.error?.message ?? "Order create failed");
       }
@@ -333,6 +376,15 @@ export default function OrdersPage() {
   async function handleSaveEdit(event: FormEvent) {
     event.preventDefault();
     if (!editingOrderId) return;
+    const lineErr = validateLineItems();
+    if (lineErr) {
+      setMessage(lineErr);
+      return;
+    }
+    if (!form.customerId) {
+      setMessage("Select a customer for this order.");
+      return;
+    }
     setLoading(true);
     setMessage("Saving order...");
     try {
@@ -356,7 +408,7 @@ export default function OrdersPage() {
         ...shopJsonFetch,
         body: JSON.stringify(payload),
       });
-      const json = await response.json();
+      const json = await parseShopJson(response);
       if (!json.ok) {
         throw new Error(json.error?.message ?? "Update failed");
       }
@@ -430,7 +482,11 @@ export default function OrdersPage() {
               <p className="text-base font-semibold text-[var(--primary)]">Order total: {formatUsd(computedTotal)}</p>
             </div>
 
-            <form className="mt-4 grid gap-4" onSubmit={editingOrderId ? handleSaveEdit : handleCreate}>
+            <form
+              className="mt-4 grid gap-4"
+              noValidate
+              onSubmit={editingOrderId ? handleSaveEdit : handleCreate}
+            >
           {!editingOrderId ? (
             <div className="grid gap-3">
               <p className="text-sm font-semibold">Customer</p>
@@ -489,7 +545,9 @@ export default function OrdersPage() {
                       Email
                       <input
                         className="mt-1 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                        type="email"
+                        autoComplete="email"
+                        inputMode="email"
+                        type="text"
                         value={newCustomer.email}
                         onChange={(event) =>
                           setNewCustomer((prev) => ({ ...prev, email: event.target.value }))

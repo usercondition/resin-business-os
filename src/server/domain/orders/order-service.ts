@@ -11,7 +11,7 @@ import { appendTimelineEvent } from "@/server/timeline/timeline-service";
 import { z } from "zod";
 
 const orderItemSchema = z.object({
-  itemName: z.string().min(1),
+  itemName: z.string().trim().min(1, "Item name is required"),
   quantity: z.number().int().positive(),
   unitPrice: z.number().nonnegative(),
   materialType: z.string().optional(),
@@ -19,12 +19,19 @@ const orderItemSchema = z.object({
   printSpec: z.record(z.unknown()).optional(),
 });
 
+/** Optional FK ids: omit empty strings from manual forms so stray text does not fail CUID parse. */
+const optionalCuid = (field: string) =>
+  z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().cuid({ message: `${field} must be a valid id or left blank` }).optional(),
+  );
+
 const createOrderSchema = z
   .object({
     customerId: z.string().cuid().optional(),
     newCustomer: customerInputSchema.optional(),
-    leadId: z.string().cuid().optional(),
-    quoteId: z.string().cuid().optional(),
+    leadId: optionalCuid("Lead ID"),
+    quoteId: optionalCuid("Quote ID"),
     dueDate: z.coerce.date().optional(),
     notes: z.string().optional(),
     tax: z.number().nonnegative().default(0),
@@ -50,8 +57,8 @@ const createOrderSchema = z
 const updateOrderSchema = z.object({
   orderId: z.string().cuid(),
   customerId: z.string().cuid(),
-  leadId: z.string().cuid().optional(),
-  quoteId: z.string().cuid().optional(),
+  leadId: optionalCuid("Lead ID"),
+  quoteId: optionalCuid("Quote ID"),
   dueDate: z.coerce.date().optional(),
   notes: z.string().optional(),
   tax: z.number().nonnegative().default(0),
